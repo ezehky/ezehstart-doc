@@ -4,16 +4,16 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* Colours are tokens, so light and dark are one definition each.
-   The accent is the kit's own lime; neutrals are slate, as in the app. */
+   The accent is the kit's own teal, matching the Ezeh Start logo; neutrals are slate, as in the app. */
 @theme {
   --color-page: #ffffff;
   --color-panel: #f8fafc;
   --color-line: #e2e8f0;
   --color-fg: #0f172a;
   --color-muted: #64748b;
-  --color-accent: #84cc16;
-  --color-accent-ink: #4d7c0f;
-  --color-accent-soft: #ecfccb;
+  --color-accent: #2dd4b5;
+  --color-accent-ink: #0f766e;
+  --color-accent-soft: #ccfbf1;
   --color-code-bg: #0f172a;
   --spacing-22: 5.5rem;
 }
@@ -24,9 +24,9 @@
   --color-line: #1e293b;
   --color-fg: #e2e8f0;
   --color-muted: #94a3b8;
-  --color-accent: #a3e635;
-  --color-accent-ink: #a3e635;
-  --color-accent-soft: rgb(163 230 53 / 0.12);
+  --color-accent: #2dd4b5;
+  --color-accent-ink: #2dd4b5;
+  --color-accent-soft: rgb(45 212 181 / 0.12);
   --color-code-bg: #0b1222;
 }
 
@@ -54,10 +54,6 @@ body {
 @layer components {
   .icon-btn {
     @apply inline-flex h-9 w-9 items-center justify-center rounded-lg border border-line text-muted transition hover:border-accent hover:text-fg;
-  }
-
-  .brand-mark {
-    @apply flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-sm font-black text-slate-950;
   }
 
   .nav-link {
