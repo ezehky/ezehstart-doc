@@ -1,0 +1,62 @@
+<h1>Roles and gates</h1>
+<p class="lead">Roles decide how far into the admin workspace someone can go. Gates enforce it in two places.</p>
+
+<h2>Roles</h2>
+<p>
+  A role is a database row, not an enum case, so administrators create and edit roles from
+  <strong>Admin → Roles</strong>. An admin can hold <strong>any number</strong> of roles through
+  the <code>role_user</code> pivot.
+</p>
+<p>
+  Each role holds a <em>gate map</em>: a level of access for each area of the admin workspace.
+  When an admin has several roles, the maps are merged and <strong>the highest access wins each
+  key</strong>. A second role can therefore only widen what someone reaches. A personal override
+  on the account sits on top of the merged result, and it's the only thing that can narrow it.
+</p>
+<p>The Manage roles modal enforces two rules: you can't revoke your own admin role, and you can't revoke the last one.</p>
+
+<h2>Access levels</h2>
+<p><code>GateAccessEnum</code>, from least to most:</p>
+<table>
+  <tbody>
+    <tr><td><code>none</code></td><td>Can't open the screen</td></tr>
+    <tr><td><code>view</code></td><td>Can read</td></tr>
+    <tr><td><code>modify</code></td><td>Can edit existing rows</td></tr>
+    <tr><td><code>create</code></td><td>Can add rows</td></tr>
+    <tr><td><code>full</code></td><td>Everything, including delete</td></tr>
+  </tbody>
+</table>
+<p>
+  The levels form a ladder: <code>full</code> includes <code>create</code>, which includes
+  <code>modify</code>, which includes <code>view</code>. A screen only asks for the lowest level
+  it needs.
+</p>
+
+<h2>Inheritance</h2>
+<p>
+  Gate keys are dotted, for example <code>users.deleted-accounts</code>. A child key with no gate
+  of its own inherits its parent's. That means <strong>a new screen starts closed for narrow roles
+  and open for broad ones</strong>: <code>users.deleted-accounts</code> opens for a role holding
+  <code>users</code>, but stays shut for a role holding only <code>users.users-list</code>. The
+  protected admin role needs nothing granted. A custom role does.
+</p>
+
+<h2>Gated twice</h2>
+<p>Every action button is gated in two places:</p>
+<ol>
+  <li><code>&lt;x-dashboard.gate.button&gt;</code> or <code>&lt;x-dashboard.gate.menu-item&gt;</code> hides it, and</li>
+  <li>the Livewire method behind it checks again with <code>kGate()</code>.</li>
+</ol>
+<p>
+  Hiding a control is a courtesy. The method check is what actually protects the action.
+  Whole screens are closed the same way: <code>setPageGate()</code> from <code>WithGateProps</code>
+  names the gate a screen sits behind, so typing the URL doesn't get around a hidden sidebar
+  entry.
+</p>
+
+<h2>The Author role</h2>
+<p>
+  A seeded <strong>Author</strong> role limits an account to the posts it wrote and gives it a
+  public byline, with the bio and social handles on <code>user_profiles</code>. The blog looks
+  the role up by its <em>slug</em>, so you can rename it or change its gates freely.
+</p>

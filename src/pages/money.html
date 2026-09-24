@@ -1,0 +1,29 @@
+<h1>Ledger and currencies</h1>
+<p class="lead">A transaction ledger that can't disagree with itself, shown in each viewer's own currency.</p>
+
+<h2>The ledger</h2>
+<p>
+  <code>transactions</code> is the core table. Next to it sit gateway, meta, evidence, balance
+  and charge rows.
+</p>
+<ul>
+  <li><strong>Balances are derived</strong> from confirmed rows under a row lock, never stored as a free-standing number, so a balance can't silently disagree with the ledger that explains it.</li>
+  <li><strong>Money is integer minor units</strong> throughout (see <code>MoneyCast</code>).</li>
+  <li>Administrators get a <strong>review queue</strong> and a <strong>manual adjustment</strong> that records who moved what, and why.</li>
+  <li>Members see their own statement at <code>/app/transactions</code>.</li>
+</ul>
+
+<h2>Currencies</h2>
+<p>
+  <code>currencies</code> holds rates against one default currency. The ledger is
+  <strong>stored in the default currency only</strong>, and every other currency is just a way of
+  <em>reading</em> it. <code>users.currency_id</code> set to null means "use the default".
+  Changing someone's currency never touches a stored row.
+</p>
+<pre><code>{!! kMoneyFormat($amount) !!}                    <span class="c">// converted for the viewer</span>
+{!! kMoneyFormat($limit, convert: false) !!}     <span class="c">// a limit or an input: don't convert</span>
+kMoneyFormat($amount, decodeHtml: true)          <span class="c">// anywhere HTML isn't rendered</span></code></pre>
+<div class="callout warn">
+  <p><code>kMoneyFormat()</code> returns an HTML entity, so Blade needs <code>{!! !!}</code> to print it.</p>
+</div>
+<p><code>&lt;x-form.money-field&gt;</code> gives Livewire a plain number, whatever the display looks like.</p>

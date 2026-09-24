@@ -1,0 +1,32 @@
+<h1>Image and video libraries</h1>
+<p class="lead">Two libraries with the same design, so a screen that knows one already knows the other.</p>
+
+<h2>What both share</h2>
+<ul>
+  <li><strong>Folders</strong>: a folder tree per library.</li>
+  <li><strong>Visibility per item</strong> (<code>MediaVisibilityEnum</code>): <code>private</code>, <code>role</code>, or <code>public</code>.</li>
+  <li><strong>A delete guard</strong> backed by a usage table (<code>image_usages</code>, <code>video_usages</code>) with a restricting foreign key. An item in use on a published post refuses to be deleted, so the post never ends up with a broken picture.</li>
+  <li><strong>Pickers</strong>: <code>&lt;x-form.image-slot&gt;</code> and <code>&lt;x-form.video-slot&gt;</code>.</li>
+  <li>Available in <strong>both workspaces</strong>. A member's uploads are private to them and don't appear in the admin library. Admins reach them only from the account page.</li>
+  <li>When someone at the site changes something in a member's library, <code>UploadModifiedEmail</code> tells the member.</li>
+</ul>
+
+<h2>Images</h2>
+<ul>
+  <li>Upload several images at once, and search by name.</li>
+  <li><strong>Rename without changing the URL</strong>: the title changes, but the stored path doesn't.</li>
+  <li>Members have a configurable quota. Administrators don't.</li>
+  <li>Uploads are optimised with <code>spatie/laravel-image-optimizer</code> when <code>jpegoptim</code>, <code>optipng</code> and <code>pngquant</code> are installed. Without them, uploads still work, just unoptimised.</li>
+</ul>
+
+<h2>Videos</h2>
+<p>
+  A video row is a <strong>reference</strong> (a provider plus that provider's own id), never a
+  file and never a URL. The player URL is rebuilt from that pair every time it's rendered, so
+  there's no author-supplied URL stored in the row to be trusted later.
+</p>
+<ul>
+  <li><code>VideoProviderEnum</code> is an allowlist: YouTube and Vimeo.</li>
+  <li><code>uploads.user-video-limit</code> (default 25) caps a member's library. It isn't about storage, since a video uses no disk space. It keeps the library usable.</li>
+  <li>Videos embedded in a post body are claimed from the saved HTML by <code>VideoLibraryService::syncFromHtml()</code>.</li>
+</ul>

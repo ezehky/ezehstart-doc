@@ -1,0 +1,37 @@
+<h1>Testing</h1>
+<p class="lead">Pest 5. Every change comes with a test.</p>
+
+<h2>Running</h2>
+<pre><code>php artisan test --compact
+php artisan test --compact --filter=Impersonation</code></pre>
+<p>
+  The suite is large (over 700 tests at the last release) and runs on SQLite. Walk
+  <code>.agents/my-skills/checklist.md</code> before calling anything done.
+</p>
+
+<h2>Things that will catch you out</h2>
+<ul>
+  <li>
+    <strong>The site configuration is a file, not a table</strong>, so <code>RefreshDatabase</code>
+    doesn't reset it. <code>tests/Pest.php</code> fakes the disk for every feature test.
+  </li>
+  <li>
+    <strong><code>EmailRule</code> does a live DNS MX lookup.</strong> It's off under test. To
+    exercise it, pass <code>new EmailRule(required: true, max: 190, verifyMailServer: true)</code>.
+  </li>
+  <li>
+    <strong>Emailed codes have a 60-second resend floor.</strong> A test that calls resend twice
+    gets a validation error rather than a second email. Advance time or clear the cache between
+    the two calls.
+  </li>
+  <li>
+    <strong>Anonymized accounts are soft-deleted</strong>, so <code>User::find()</code> won't find
+    them. Use <code>AccountDeletionService::trashedQuery()</code>.
+  </li>
+</ul>
+
+<h2>Where tests go</h2>
+<p>
+  Read <code>.agents/my-skills/testing.md</code> for layout, naming and the factories. The
+  <code>testing-best-practices</code> skill covers choosing coverage and assertions.
+</p>

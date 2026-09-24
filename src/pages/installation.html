@@ -1,0 +1,69 @@
+<h1>Installation</h1>
+<p class="lead">From clone to a signed-in admin in a few minutes.</p>
+
+<h2>Requirements</h2>
+<ul>
+  <li>PHP 8.3 or newer, with the extensions Laravel 13 needs</li>
+  <li>Composer 2</li>
+  <li>Node.js and npm, for the Vite build</li>
+  <li>A database. The example environment uses <strong>SQLite</strong>, so nothing needs to be running to get started</li>
+  <li><em>Optional:</em> <code>jpegoptim</code>, <code>optipng</code> and <code>pngquant</code> for image optimisation. Uploads still work without them, just unoptimised</li>
+</ul>
+
+<h2>Set up</h2>
+<pre><code>composer setup</code></pre>
+<p>That single script runs, in order:</p>
+<ol>
+  <li><code>composer install</code></li>
+  <li>copies <code>.env.example</code> to <code>.env</code> if there isn't one yet</li>
+  <li><code>php artisan key:generate</code></li>
+  <li><code>php artisan migrate --force</code></li>
+  <li><code>php artisan storage:link</code></li>
+  <li><code>npm install</code> and <code>npm run build</code></li>
+</ol>
+
+<h2>Seed the essentials</h2>
+<pre><code>php artisan db:seed</code></pre>
+<p>
+  This creates the roles (including the protected admin role and the <strong>Author</strong> role),
+  the notification types, all 250 countries (read from <code>database/data/countries.json</code>,
+  with no network call), the site configuration, and one administrator:
+</p>
+<table>
+  <tbody>
+    <tr><th>Email</th><td><code>admin@example.test</code></td></tr>
+    <tr><th>Password</th><td><code>password</code></td></tr>
+  </tbody>
+</table>
+<div class="callout warn">
+  <p><strong>Change these before the kit becomes a real project.</strong> They're set in
+  <code>database/seeders/UserSeeder.php</code>.</p>
+</div>
+
+<h2>Run it</h2>
+<pre><code>composer dev</code></pre>
+<p>
+  This starts three processes together: <code>php artisan serve</code>, a queue worker
+  (<code>queue:listen</code>), and the Vite dev server. Sign in at <code>/login</code>. An admin
+  lands on <code>/app-splash</code> and a member on <code>/app</code>.
+</p>
+
+<h2>Demo data (optional)</h2>
+<p>For a dashboard with something in it (invented people, a ledger, posts, FAQs and v1.0 of the three legal pages):</p>
+<pre><code>php artisan db:seed --class=DemoSeeder</code></pre>
+<p>
+  It's deliberately kept out of <code>DatabaseSeeder</code>: a real install shouldn't start with
+  invented money or placeholder legal copy. Every seeder under it matches on a natural key, so
+  running it again refreshes the data rather than doubling it.
+</p>
+<div class="callout warn">
+  <p>The demo policies only show the <em>shape</em> of a policy. They're <strong>not legal
+  advice</strong>. See the <a href="#/disclaimer">disclaimer</a>.</p>
+</div>
+
+<h2>Next steps</h2>
+<ul>
+  <li>Read <a href="#/configuration">Configuration</a> for the environment keys and site switches</li>
+  <li>Start the <a href="#/scheduler">scheduler</a> if you want scheduled posts, campaigns and deletions to run</li>
+  <li>Read <a href="#/house-style">the house style</a> before writing your first screen</li>
+</ul>

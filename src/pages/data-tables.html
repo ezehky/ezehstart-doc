@@ -1,0 +1,37 @@
+<h1>Data tables</h1>
+<p class="lead">One trait behind every listing, so a new listing is assembled from existing parts rather than built from scratch.</p>
+
+<h2>WithDataTable</h2>
+<p>Every part is optional. A page only gets the pieces it renders:</p>
+<ul>
+  <li>Row selection and a bulk-action bar. Bulk delete is only offered where <code>tableDeletable()</code> allows it.</li>
+  <li>A <strong>column manager</strong> that each account keeps for itself. It saves as each switch is flipped, and stores the columns that are <em>hidden</em>, so a column added later shows up for everyone.</li>
+  <li>Sorting and a date range.</li>
+  <li><strong>Export</strong> to CSV, XLSX or PDF through <code>ExportService</code>. An account can only export what it can already see: the gate and the column list decide what goes in the file.</li>
+</ul>
+<p>
+  <code>columnMaker()</code>, <code>filterMaker()</code> and <code>metricMaker()</code> take named
+  arguments rather than loose arrays, so a misspelled key causes an error instead of being silently
+  ignored.
+</p>
+
+<h2>Components</h2>
+<p>
+  <code>&lt;x-table.*&gt;</code>: <code>columns</code>, <code>rows</code>, <code>cell</code>,
+  <code>select</code>, <code>bulk-bar</code>, <code>active-filters</code>,
+  <code>column-manager</code>, <code>export-modal</code>, <code>summary</code>, <code>empty</code>.
+</p>
+
+<h2>Imports</h2>
+<p>
+  <code>WithFileImport</code> reads CSV and XLSX one row at a time, using openspout so memory stays
+  flat for files of any size. A bad row doesn't stop the run: each row is tried on its own, and the
+  failures are reported back by row.
+</p>
+
+<h2>Status toggles</h2>
+<p>
+  <code>WithStatusToggle</code> switches a row between active and inactive directly from the
+  listing, through <code>&lt;x-util.e-badge&gt;</code>. It uses the same gate, activity log and
+  toast as the edit form.
+</p>

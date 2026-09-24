@@ -1,0 +1,27 @@
+<h1>Impersonation</h1>
+<p class="lead">
+  An administrator can view the site as a member, because "the button doesn't work" can't be
+  diagnosed from the outside. It's also the most dangerous thing an admin can do, so it's built
+  on the assumption that it will one day be abused or left running.
+</p>
+
+<h2>The rules</h2>
+<ul>
+  <li><strong>Never admin to admin.</strong> Becoming a peer would be privilege escalation with a support story attached.</li>
+  <li><strong>The real identity lives in the session</strong>, never in a signed URL or a query parameter, because a token in a link gets copied, logged and replayed.</li>
+  <li><strong>Both ends are logged as the administrator</strong>, so the trail reads "X started acting as Y".</li>
+  <li><strong>It expires after an hour.</strong></li>
+  <li><strong>Every screen that changes the account is closed</strong> while it runs. Impersonation is for looking.</li>
+</ul>
+<p>To end a session, visit <code>/stop-impersonating</code>.</p>
+
+<h2>Writing screens that respect it</h2>
+<p>
+  Impersonation replaces the signed-in account, so nothing about the request identifies the admin
+  any more. <code>ImpersonationService::isImpersonating()</code> is the only way to tell. While it
+  runs, the session passes <code>UserMiddleware</code> and never <code>AdminMiddleware</code>,
+  which is why the hour expiry is checked in <code>UserMiddleware</code>.
+</p>
+<p>Any new screen that <em>changes</em> an account rather than just showing it needs this in <code>mount()</code>:</p>
+<pre><code>abort_if(app(ImpersonationService::class)-&gt;isImpersonating(), 404);</code></pre>
+<p>The security, delete-account and download-data screens already do this.</p>

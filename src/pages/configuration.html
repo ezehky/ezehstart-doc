@@ -1,0 +1,69 @@
+<h1>Configuration</h1>
+<p class="lead">
+  Configuration comes in two layers: <code>.env</code> for secrets and infrastructure, and a site
+  configuration that administrators edit from the dashboard, with no deploy needed.
+</p>
+
+<h2>Environment keys</h2>
+<p>The standard Laravel keys apply. These are the ones specific to the kit:</p>
+<table>
+  <thead><tr><th>Key</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>GOOGLE_CLIENT_ID</code> / <code>_SECRET</code></td><td>Google sign-in</td></tr>
+    <tr><td><code>FACEBOOK_CLIENT_ID</code> / <code>_SECRET</code></td><td>Facebook sign-in</td></tr>
+    <tr><td><code>GITHUB_CLIENT_ID</code> / <code>_SECRET</code></td><td>GitHub sign-in</td></tr>
+    <tr><td><code>TURNSTILE_SITE_KEY</code> / <code>TURNSTILE_SECRET_KEY</code></td><td>Cloudflare Turnstile captcha. The captcha switch has no effect until <strong>both</strong> are set</td></tr>
+    <tr><td><code>LARAVEL_PDF_DRIVER</code></td><td><code>dompdf</code> by default, which needs nothing installed. Other laravel-pdf drivers need their own packages</td></tr>
+  </tbody>
+</table>
+<p>
+  The example environment uses the <code>database</code> driver for sessions, queue and cache, and
+  <code>log</code> for mail, so a fresh clone runs with nothing extra installed.
+</p>
+
+<h2>Site configuration</h2>
+<p>
+  Everything an administrator should be able to change without a deploy is stored in a
+  <strong>JSON file on the local disk</strong>, not in a table. It's edited under
+  <strong>Admin → Site configuration</strong>:
+</p>
+<table>
+  <thead><tr><th>Screen</th><th>Holds</th></tr></thead>
+  <tbody>
+    <tr><td>Info</td><td>Site name, branding, logo, support contacts</td></tr>
+    <tr><td>Security</td><td>Sign-in switches, password policy, captcha, passkeys, activity-log retention</td></tr>
+    <tr><td>Preferences</td><td>Newsletter placements, cookie notice, mobile floating menu, account deletion window, data download</td></tr>
+    <tr><td>Social handles, currencies, email senders, notification types, logs</td><td>One screen each</td></tr>
+    <tr><td>JSON editor</td><td>Any key that no screen has a field for yet</td></tr>
+  </tbody>
+</table>
+
+<h3>Reading configuration in code</h3>
+<pre><code>kSiteConfig('group', 'key', $default);   <span class="c">// a value</span>
+kSiteFlag('group', 'key', $default);     <span class="c">// an on/off switch</span></code></pre>
+<div class="callout warn">
+  <p><strong>Never read a switch with <code>kSiteConfig()</code>.</strong> Its default applies
+  to any falsy value, so a switch someone deliberately turned <em>off</em> reads back as its
+  default. <code>kSiteFlag()</code> checks whether the key is present instead.</p>
+</div>
+<p>
+  <code>kSiteConfig()</code> is never empty after boot, because the cache layer adds the resolved
+  logo and support keys. To find out whether a configuration has actually been saved, use
+  <code>app(SiteConfigurationService::class)->getConfigs(raw: true)</code>.
+</p>
+
+<h2>Defaults worth knowing</h2>
+<table>
+  <thead><tr><th>Switch</th><th>Default</th></tr></thead>
+  <tbody>
+    <tr><td>Strong passwords, password history, passwordless sign-in</td><td>On</td></tr>
+    <tr><td>Two-factor, social sign-in, captcha</td><td>Off</td></tr>
+    <tr><td>Account deletion, anonymize after deletion, data download</td><td>On</td></tr>
+    <tr><td>Mobile floating menu</td><td>Off</td></tr>
+    <tr><td>Activity-log retention</td><td>Off (0 days, which keeps everything)</td></tr>
+  </tbody>
+</table>
+<p>
+  Every switch closes its <strong>route</strong> as well as hiding its button. A route left
+  reachable behind a hidden link isn't really disabled.
+</p>

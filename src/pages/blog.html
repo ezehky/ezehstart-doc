@@ -1,0 +1,43 @@
+<h1>Blog</h1>
+<p class="lead">Posts, categories and tags, with a public index and post pages.</p>
+
+<h2>Writing</h2>
+<ul>
+  <li>A <strong>tiptap</strong> editor that inserts images and videos directly from the libraries. It loads lazily, so it only costs anything on pages that use it.</li>
+  <li>Posts can be <strong>scheduled</strong>, <strong>featured</strong> and <strong>archived</strong>. <code>blog:publish-scheduled</code> runs every minute, publishes each post at its time, and notifies subscribers.</li>
+  <li>The public post page shows <strong>related reading</strong>, plus an author card for posts written by an Author.</li>
+</ul>
+
+<h2>Categories and tags</h2>
+<p>
+  Categories are <strong>polymorphic</strong>: one <code>categories</code> table serves every kind
+  of category, separated by <code>CategoryGroupEnum</code>. When your project adds products, they
+  can reuse the same table and admin screen instead of getting a second one. Tags work the same
+  way.
+</p>
+
+<h2>Authors</h2>
+<p>
+  The seeded <strong>Author</strong> role limits an account to the posts it wrote, and gives it a
+  public byline with the bio and social handles from <code>user_profiles</code>, rendered by
+  <code>&lt;x-site.author-card&gt;</code>.
+</p>
+
+<h2>Safety</h2>
+<p>
+  Post HTML is sanitised <strong>on the way in</strong> by <code>BlogService::sanitize()</code>.
+  That's what makes <code>{!! $post-&gt;content !!}</code> safe on the public page, so don't bypass
+  it.
+</p>
+<p>
+  <code>sanitize()</code> <strong>rebuilds every <code>&lt;iframe&gt;</code></strong> instead of
+  cleaning it, because <code>strip_tags</code> keeps the attributes on any tag it allows. The
+  <code>src</code> is resolved again through <code>VideoProviderEnum</code>, and the tag is written
+  fresh from the provider and id. An iframe pointing anywhere else is dropped. To allow a new host,
+  add a case to that enum and nowhere else.
+</p>
+<div class="callout">
+  <p>Rich-text content is styled by <code>.rich-prose</code> in <code>app.css</code>, <strong>not</strong>
+  by <code>prose</code>. <code>@tailwindcss/typography</code> isn't a dependency, so
+  <code>prose</code> classes compile to nothing.</p>
+</div>

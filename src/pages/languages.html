@@ -1,0 +1,22 @@
+<h1>Languages</h1>
+<p class="lead">Interface translation using Laravel's JSON language files, with a machine-translation helper for development.</p>
+
+<h2>How it works</h2>
+<p>
+  <code>LocaleEnum</code> lists the languages the kit knows how to describe: English, French,
+  Spanish, Portuguese, German and Arabic. A language is only <strong>offered</strong> to visitors
+  once its <code>lang/{code}.json</code> file exists. English and French ship today.
+</p>
+<p>
+  Guest screens are fully wrapped in <code>__()</code>. Dashboard screens are wrapped as they're
+  worked on.
+</p>
+
+<h2>Adding a language</h2>
+<pre><code>php artisan lang:extract      <span class="c"># collect every __() string into lang/en.json</span>
+php artisan lang:translate fr <span class="c"># machine-translate into lang/fr.json</span></code></pre>
+<p>
+  Review the output by hand. <code>lang:translate</code> uses
+  <code>stichoza/google-translate-php</code>, a <strong>development-only</strong> dependency.
+  Never call it at runtime.
+</p>

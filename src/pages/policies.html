@@ -1,0 +1,40 @@
+<h1>Legal pages and consent</h1>
+<p class="lead">Terms, privacy and cookie pages that your install serves to its own users, with consent recorded against the exact version accepted.</p>
+
+<div class="callout">
+  <p>This page is about the legal pages <em>your application</em> serves. For the legal terms of
+  Ezeh Start itself, see <a href="#/license">License</a>, <a href="#/trademark">Trademark policy</a>
+  and <a href="#/disclaimer">Disclaimer</a>.</p>
+</div>
+
+<h2>The pages</h2>
+<p>
+  <code>/terms</code>, <code>/privacy</code> and <code>/cookies</code> are written in Markdown from
+  <strong>Admin → Policies</strong> and served as plain, crawlable pages with a contents sidebar.
+  Each one is a case in <code>PolicyTypeEnum</code>, and adding a case gives you a new public page
+  automatically. The public footer links them straight from the enum.
+</p>
+<div class="callout">
+  <p><code>App\Models\Policy</code> is a <strong>legal document</strong>, not a Laravel
+  authorization policy. The kit uses no authorization policies at all.</p>
+</div>
+
+<h2>Versioning</h2>
+<ul>
+  <li>Published text is never edited. To change it, <strong>draft a new version</strong> and publish that.</li>
+  <li>Older versions stay readable at <code>?version=</code>, because consent records point at them.</li>
+</ul>
+
+<h2>Consent</h2>
+<ul>
+  <li>Terms and privacy are marked as <strong>requiring consent</strong>, so registration asks for it.</li>
+  <li><code>user_consents</code> records the version accepted, with the timestamp, IP address and user agent.</li>
+  <li>When a replacement is published, every account has to accept it again.</li>
+</ul>
+
+<h2>Before you go live</h2>
+<p>
+  The <code>DemoSeeder</code> policies only show the <em>shape</em> of a policy. They aren't
+  legal advice and aren't written for your jurisdiction or business. Have your own terms and
+  privacy policy written, then publish them as a new version.
+</p>

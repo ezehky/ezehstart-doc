@@ -1,0 +1,37 @@
+<h1>Extending the kit</h1>
+<p class="lead">Most extension points are an enum case. The exhaustive <code>match</code> arms tell you what's still missing.</p>
+
+<h2>A new screen</h2>
+<ol>
+  <li>Create <code>resources/views/pages/{group}/⚡name.blade.php</code>, a single-file Livewire component.</li>
+  <li>Route it with <code>Route::livewire('/path', 'pages::group.name')</code> in the right workspace's route file.</li>
+  <li>Call <code>setPageGate()</code> if it belongs to the admin workspace, and grant the gate to any custom role that needs it.</li>
+  <li>If it <em>changes</em> an account, add the impersonation <code>abort_if</code> to <code>mount()</code>.</li>
+  <li>Log every admin write, confirm every destructive action, and write the test.</li>
+</ol>
+
+<h2>A third workspace</h2>
+<ol>
+  <li><code>app/Http/Middleware/{Type}Middleware.php</code>: a copy of <code>UserMiddleware</code> with the new enum case.</li>
+  <li><code>routes/{type}.php</code>.</li>
+  <li>A route group in <code>bootstrap/app.php</code>.</li>
+  <li>A case in <code>UserTypeEnum</code>, then the <code>match</code> in <code>UserService::middlewareGeneralCheck()</code> and the branch in <code>WithAuthWorker::userDashboardRedirect()</code>. Both are exhaustive, so PHP tells you if you've missed one.</li>
+</ol>
+
+<h2>Other extension points</h2>
+<table>
+  <thead><tr><th>To add</th><th>Do this</th></tr></thead>
+  <tbody>
+    <tr><td>A language</td><td>Run <code>lang:translate {code}</code>. The <code>LocaleEnum</code> case is offered once <code>lang/{code}.json</code> exists</td></tr>
+    <tr><td>A social provider</td><td>A case in <code>SocialProviderEnum</code> (its value is the Socialite driver name) plus a block in <code>config/services.php</code></td></tr>
+    <tr><td>A video host</td><td>A case in <code>VideoProviderEnum</code> and a branch in each of its <code>match</code> arms. Nowhere else</td></tr>
+    <tr><td>A legal page</td><td>A case in <code>PolicyTypeEnum</code>. The route and footer link follow automatically</td></tr>
+    <tr><td>A system email slot</td><td>A case in <code>SystemEmailEnum</code>, then <code>WithSystemTemplate</code> on the mailable</td></tr>
+    <tr><td>A notification type</td><td>A row, added from the admin. No deploy needed</td></tr>
+    <tr><td>A category kind</td><td>A case in <code>CategoryGroupEnum</code></td></tr>
+    <tr><td>A configuration key</td><td>The JSON editor today, a field on a configuration screen when it's worth one</td></tr>
+  </tbody>
+</table>
+
+<h2>Changing a table</h2>
+<p>Add a new <code>add_*_to_*_table</code> migration rather than editing an existing one, and avoid reserved words as column names.</p>

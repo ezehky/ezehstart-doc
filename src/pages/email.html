@@ -1,0 +1,59 @@
+<h1>Email and newsletter</h1>
+<p class="lead">A template builder, campaigns, a newsletter with no extra table, and system emails an admin can restyle.</p>
+
+<h2>Template builder</h2>
+<p>
+  <strong>Admin → Marketing → Templates</strong> builds emails from blocks: heading, paragraph,
+  button, image, divider, spacer, columns, raw HTML, logo, favicon, social links, and blocks that
+  pull in dynamic or related content. Design settings (colours, fonts, layout) apply to the whole
+  template.
+</p>
+<p>
+  <strong>Saved sections</strong> (a header, a footer, a call to action, a promotional block) are
+  designed once and dropped into any template or campaign.
+</p>
+<p>
+  Subjects, preview text and block content accept <code>{{token}}</code> and
+  <code>{{token | default: "fallback"}}</code>. Tokens resolve the same way wherever they're typed.
+</p>
+
+<h2>Campaigns</h2>
+<ul>
+  <li><strong>Audience</strong>: specific addresses, all users, or everyone subscribed to chosen notification types.</li>
+  <li><strong>Test sends</strong>, optionally previewed as a particular account.</li>
+  <li><strong>Scheduling</strong> in the sender's own time zone, with <strong>recurrence</strong>: daily, weekly, fortnightly, monthly or quarterly. Each occurrence becomes its own campaign.</li>
+  <li><code>email:send-campaigns</code> runs every minute and sends in chunks of 200 recipients.</li>
+  <li><strong>Sent</strong> keeps a history of what went out, and to whom.</li>
+  <li><strong>Senders</strong>: the default address, or a custom domain.</li>
+</ul>
+
+<h2>System emails</h2>
+<p>
+  A builder template can stand in for a built-in mailable. Assign it to a slot in
+  <code>SystemEmailEnum</code> (currently <em>login</em> and <em>welcome</em>) through
+  <code>email_templates.system_email</code>. The mailable uses the <code>WithSystemTemplate</code>
+  trait. If no template is assigned, the Blade view is sent as before.
+</p>
+
+<h2>Newsletter</h2>
+<p>
+  There's <strong>no subscribers table</strong>. An address is a <code>users</code> row: the
+  account if one exists, or a new <code>NEWSLETTER_SUBSCRIBER</code> row if not. The subscription
+  itself is the <code>ANNOUNCEMENTS</code> switch in <code>notification_preferences</code>.
+  Someone who signs up in March and registers in June keeps the same row and subscription.
+</p>
+<p>A subscriber row isn't an account: it has no password and it's excluded from listings and metrics. Templates insert an unsubscribe link with the <code>{{unsubscribe_url}}</code> token, which leads to <code>/unsubscribe/{email}</code>.</p>
+
+<h2>Announcements</h2>
+<p>
+  The public popup shows the <strong>latest live</strong> announcement (a picture or an icon, a
+  link, and an optional newsletter form) in a stacked or split layout. Older announcements aren't
+  queued behind it. If none is live, the popup falls back to the plain newsletter sign-up.
+</p>
+
+<h2>Cookie notice</h2>
+<p>
+  <code>preferences.accept-cookies</code> shows a notice on every page. It's a
+  <strong>notice, not a consent gate</strong>: the kit sets only session and CSRF cookies. If you
+  add analytics, turn it off and put a real consent choice in its place.
+</p>

@@ -1,0 +1,32 @@
+<h1>Commands</h1>
+<p class="lead">Every command you're likely to run while working on the kit.</p>
+
+<h2>Composer scripts</h2>
+<pre><code>composer setup     <span class="c"># install, key, migrate, storage link, npm install, build</span>
+composer dev       <span class="c"># server + queue + vite together</span>
+composer test      <span class="c"># Pint, PHPStan and the suite, as CI runs them</span></code></pre>
+
+<h2>Quality</h2>
+<pre><code>php artisan test --compact                 <span class="c"># the whole suite</span>
+php artisan test --compact --filter=X      <span class="c"># one file or one test</span>
+vendor/bin/pint --dirty                    <span class="c"># after touching any PHP</span>
+vendor/bin/phpstan analyse --memory-limit=1G</code></pre>
+
+<h2>Kit commands</h2>
+<table>
+  <thead><tr><th>Command</th><th>Purpose</th></tr></thead>
+  <tbody>
+    <tr><td><code>account:send-deletion-reminders</code></td><td>Five-day and one-day deletion warnings</td></tr>
+    <tr><td><code>account:process-deletions</code></td><td>Anonymize or remove accounts whose window has ended</td></tr>
+    <tr><td><code>blog:publish-scheduled</code></td><td>Publish due posts and notify subscribers</td></tr>
+    <tr><td><code>email:send-campaigns</code></td><td>Send due campaigns in chunks</td></tr>
+    <tr><td><code>activity:prune-logs</code></td><td>Apply the activity-log retention window</td></tr>
+    <tr><td><code>lang:extract</code></td><td>Collect translatable strings into <code>lang/en.json</code></td></tr>
+    <tr><td><code>lang:translate {code}</code></td><td>Machine-translate into another language (development only)</td></tr>
+  </tbody>
+</table>
+<p>The scheduled commands all accept <code>--dry-run</code>.</p>
+
+<h2>Seeding</h2>
+<pre><code>php artisan db:seed                      <span class="c"># roles, countries, notification types, config, one admin</span>
+php artisan db:seed --class=DemoSeeder   <span class="c"># invented people, ledger, posts, FAQs, policies</span></code></pre>

@@ -1,0 +1,33 @@
+<h1>Going to production</h1>
+<p class="lead">A checklist for turning the kit into a live product.</p>
+
+<h2>Identity and branding</h2>
+<ul>
+  <li><strong>Rename your product.</strong> Set <code>APP_NAME</code> and the site name under <strong>Site configuration → Info</strong>. Your product mustn't be called "Ezeh Start". See the <a href="#/trademark">trademark policy</a>.</li>
+  <li>Replace the logo, favicon and support contacts.</li>
+  <li>Change or remove the seeded admin <code>admin@example.test</code> / <code>password</code>.</li>
+</ul>
+
+<h2>Legal</h2>
+<ul>
+  <li>Replace the demo policies with terms, privacy and cookie policies written for your business. Publish them as a new version.</li>
+  <li>If you add analytics or advertising cookies, turn off the cookie <em>notice</em> and put a real consent choice in its place.</li>
+  <li>Decide on account-deletion and activity-log retention windows, and document them in your privacy policy.</li>
+  <li>Keep the MIT copyright notice that ships with the kit (see <a href="#/license">License</a>).</li>
+</ul>
+
+<h2>Infrastructure</h2>
+<ul>
+  <li><code>APP_ENV=production</code>, <code>APP_DEBUG=false</code>, a real mail driver, and a production database.</li>
+  <li>A cron entry for the <a href="#/scheduler">scheduler</a> and a supervised queue worker.</li>
+  <li>Back up the <strong>site configuration file</strong> on the local disk as well as the database. It isn't a table.</li>
+  <li>Install <code>jpegoptim</code>, <code>optipng</code> and <code>pngquant</code> if you want uploads optimised.</li>
+  <li>Set the Turnstile keys before turning the captcha on.</li>
+</ul>
+
+<h2>Security review</h2>
+<ul>
+  <li>Review every custom role's gate map. New screens start open for broad roles.</li>
+  <li>Decide whether two-factor, passkeys and social sign-in should be on.</li>
+  <li>Check who holds the impersonation ability.</li>
+</ul>

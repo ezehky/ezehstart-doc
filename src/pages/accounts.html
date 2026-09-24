@@ -1,0 +1,37 @@
+<h1>Account lifecycle</h1>
+<p class="lead">Accounts can be deleted, restored, and downloaded. Deletion happens over a period of time rather than all at once.</p>
+
+<h2>Deletion is a window</h2>
+<ol>
+  <li>A member asks to be deleted. The account moves to <code>PENDING_DELETION</code>, <code>deletion_scheduled_at</code> is set, and they're emailed the date.</li>
+  <li>Reminders go out <strong>five days</strong> and <strong>one day</strong> before the date. Each one is recorded in <code>user_deletion_reminders</code>, so a retried run can't send the same warning twice.</li>
+  <li>A <strong>signed restore link</strong> in every email (<code>/account/restore/{user}</code>) cancels the deletion without signing in.</li>
+  <li>When the window ends, the nightly <code>account:process-deletions</code> run <strong>anonymizes</strong> the account if it has history worth keeping, or <strong>removes</strong> it outright if not.</li>
+</ol>
+<p>
+  <code>user.account-deletion-days</code> sets the window, clamped to 1–365 in code.
+  <code>user.anonymous-after-deletion</code> chooses between anonymizing and removing.
+</p>
+
+<h2>Deleted accounts</h2>
+<p>
+  Anonymized rows are <strong>soft-deleted</strong>, so every ordinary query skips them, including
+  the users listing, its metrics and its search. They appear only under
+  <strong>Admin → Deleted accounts</strong>, where they can be restored or purged for good.
+</p>
+<div class="callout">
+  <p>To reach one in code, use <code>AccountDeletionService::trashedQuery()</code>. A plain
+  <code>User::find()</code> returns null for all of them.</p>
+</div>
+
+<h2>Download a copy</h2>
+<p>
+  At <code>/app/account/download-data</code>, behind <code>user.allow-data-download</code>,
+  <code>AccountDataExportService</code> produces one JSON document containing the profile, the
+  ledger, the consent history and both library indexes.
+</p>
+<p>
+  The password hash and its history, the two-factor secret, the recovery codes and the admin gate
+  map are <strong>deliberately left out</strong>. They're data <em>about</em> the account rather than
+  data belonging to the person, and including them would only make a leaked export more damaging.
+</p>

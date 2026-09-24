@@ -1,0 +1,66 @@
+<h1>Ezeh Start</h1>
+<p class="lead">
+  A Laravel 13 + Livewire 4 starter kit that includes what a project needs on day one,
+  plus a written house style that makes code added later look like it was always there.
+</p>
+
+<div class="cards">
+  <a class="card" href="#/installation"><strong>Install it</strong><span>Two Composer commands and a seed give you a working admin and member workspace.</span></a>
+  <a class="card" href="#/house-style"><strong>Learn the house style</strong><span>Where code goes, how it's named, and what the kit deliberately leaves out.</span></a>
+  <a class="card" href="#/workspaces"><strong>Understand the shape</strong><span>Two workspaces, user types that aren't roles, and gates checked twice.</span></a>
+  <a class="card" href="#/trademark"><strong>Use the name correctly</strong><span>The code is MIT. The name "Ezeh Start" isn't covered by that licence. Here's what you can do with it.</span></a>
+</div>
+
+<h2>What it is</h2>
+<p>
+  Ezeh Start is a <strong>starter kit, not an application</strong>. It ships authentication, roles,
+  two workspaces, account management, image and video libraries, a blog, email marketing, a
+  transaction ledger, and versioned legal pages. It contains nothing domain-specific: every model,
+  enum, service and screen in it is one you'd keep in almost any project.
+</p>
+<p>
+  What makes it different from a blank <code>laravel new</code> is the second half: a library of
+  written conventions in <code>.agents/my-skills/</code>. It covers where each kind of code lives,
+  how it's named, and which Laravel defaults the project deliberately doesn't use. Humans and AI
+  agents read the same rules, so work added by either lands in the same shape.
+</p>
+
+<h2>What ships</h2>
+<table>
+  <thead><tr><th>Area</th><th>In short</th></tr></thead>
+  <tbody>
+    <tr><td><a href="#/authentication">Authentication</a></td><td>Password, passwordless codes, passkeys, social sign-in, TOTP two-factor, password history, a login throttle, and a Turnstile captcha</td></tr>
+    <tr><td><a href="#/workspaces">Workspaces</a></td><td>An admin workspace at <code>/app-splash</code> and a member workspace at <code>/app</code>, each with its own middleware and routes</td></tr>
+    <tr><td><a href="#/roles-and-gates">Roles</a></td><td>Roles are rows an admin creates. Their gate maps merge, and the highest access wins each key</td></tr>
+    <tr><td><a href="#/accounts">Accounts</a></td><td>Deletion with a grace period and reminders, anonymize-or-remove, restore, and a download of the data held on an account</td></tr>
+    <tr><td><a href="#/impersonation">Impersonation</a></td><td>An admin views the site as a member. The session is logged, expires after an hour, and blocks every screen that changes the account</td></tr>
+    <tr><td><a href="#/media">Media</a></td><td>Image and video libraries with folders, per-item visibility, and a delete guard backed by usage tables</td></tr>
+    <tr><td><a href="#/blog">Blog</a></td><td>Tiptap editor, polymorphic categories and tags, scheduled posts, an Author role with public bylines</td></tr>
+    <tr><td><a href="#/money">Money</a></td><td>A transaction ledger whose balances are derived, never stored, plus multi-currency display</td></tr>
+    <tr><td><a href="#/email">Email</a></td><td>A block-based template builder, campaigns with recurrence, a newsletter with no extra table, and system emails an admin can override</td></tr>
+    <tr><td><a href="#/policies">Legal pages</a></td><td>Terms, privacy and cookie pages, versioned, with consent recorded against the exact version</td></tr>
+    <tr><td><a href="#/data-tables">Data tables</a></td><td>One trait for selection, bulk actions, column manager, sorting, date ranges, and CSV/XLSX/PDF export and import</td></tr>
+    <tr><td><a href="#/activity-log">Audit</a></td><td>Every admin write is logged with what changed and what it changed from</td></tr>
+  </tbody>
+</table>
+
+<h2>The stack</h2>
+<table>
+  <tbody>
+    <tr><th>Framework</th><td>Laravel 13, PHP 8.3+</td></tr>
+    <tr><th>UI</th><td>Livewire 4, single-file components only (<code>⚡name.blade.php</code>)</td></tr>
+    <tr><th>Components</th><td>Flux UI free v2</td></tr>
+    <tr><th>CSS</th><td>Tailwind v4, CSS-first config, lime accent, <code>zinc</code>→<code>slate</code> remap</td></tr>
+    <tr><th>JS</th><td>Alpine (bundled with Livewire)</td></tr>
+    <tr><th>Tests</th><td>Pest 5</td></tr>
+    <tr><th>Quality</th><td>Laravel Pint (default preset), PHPStan via Larastan</td></tr>
+  </tbody>
+</table>
+
+<h2>Who it's for</h2>
+<p>
+  Teams and solo developers starting a Laravel product who would rather begin with auth, an admin,
+  auditing and legal pages already built, and who are happy to follow a set of written opinions in
+  exchange. If you want a minimal skeleton with no conventions, a plain Laravel install will suit
+  you better.
+</p>

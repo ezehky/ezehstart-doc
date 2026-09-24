@@ -1,0 +1,66 @@
+<h1>The house style</h1>
+<p class="lead">
+  The kit is opinionated, and its opinions are written down so that everything added later looks
+  like it was part of the original.
+</p>
+
+<h2>Where it lives</h2>
+<p>
+  <code>.agents/my-skills/</code> is a library of more than forty files covering where code goes,
+  how it's named, and what the project deliberately doesn't use.
+</p>
+<table>
+  <tbody>
+    <tr><td><code>agent.md</code></td><td><strong>Read before writing any code.</strong> The ten laws, the hard bans, and the generation procedure</td></tr>
+    <tr><td><code>README.md</code></td><td>The index, which maps a task to the file that covers it</td></tr>
+    <tr><td><code>checklist.md</code></td><td><strong>Walk it before reporting done.</strong> The review gate</td></tr>
+    <tr><td><code>templates.md</code></td><td>Every copy-paste template in one place</td></tr>
+  </tbody>
+</table>
+<p>
+  AI agents get the same rules automatically. <code>CLAUDE.md</code> orients a session,
+  <code>AGENTS.md</code> carries the Laravel Boost guidelines, and the <code>house-style</code>
+  skill in <code>.claude/skills/</code> (mirrored to <code>.agents/</code> and <code>.github/</code>)
+  routes an agent into the library. Where the two overlap, the house style wins: it describes this
+  project, while Boost describes Laravel in general.
+</p>
+
+<h2>The short version</h2>
+<ul>
+  <li><strong>Screens</strong> are Livewire single-file components at <code>resources/views/pages/**/⚡name.blade.php</code>, routed with <code>Route::livewire('/path', 'pages::group.name')</code>. There's no <code>app/Livewire</code> folder and no class-based components.</li>
+  <li><strong>Validation</strong> lives in <code>protected function rules(): array</code>. Don't use <code>#[Validate]</code> or a <code>$rules</code> property.</li>
+  <li><strong>Models</strong> are <code>#[Unguarded]</code>, with a <code>casts()</code> method and <code>#[Scope]</code> scopes. Don't use <code>$fillable</code> or <code>scopeFoo()</code>.</li>
+  <li><strong>Business logic</strong> lives in <code>#[Singleton]</code> services, resolved with <code>app()</code> and never with <code>new</code>.</li>
+  <li><strong>Every status</strong> is an enum using <code>WithEnumHelpers</code>, with one <code>is{Case}()</code> method per case.</li>
+  <li><strong>Every admin write is logged</strong>: call <code>ActivityLogService::affectedColumns()</code> before <code>save()</code>, then <code>logActivity()</code> after.</li>
+  <li><strong>Every action is gated twice</strong> (see <a href="#/roles-and-gates">Roles and gates</a>).</li>
+  <li><strong>Every destructive action</strong> is confirmed with <code>&lt;x-dashboard.confirm-modal&gt;</code>, never <code>wire:confirm</code>.</li>
+  <li><strong>No logic in views.</strong> Queries, services and flags go in a page <code>#[Computed]</code> property backed by a service. Components take props.</li>
+  <li><strong>Column names avoid reserved words.</strong> Prefix them with the table's singular name, for example <code>user_type</code> rather than <code>type</code>.</li>
+  <li><strong>Table changes</strong> go in a new <code>add_*_to_*_table</code> migration.</li>
+</ul>
+
+<h2>The thirteen folders</h2>
+<p>
+  <code>app/</code> contains exactly these: <code>Casts</code>, <code>Console</code>,
+  <code>Contracts</code>, <code>Enums</code>, <code>Helpers</code>, <code>Http</code>,
+  <code>Mail</code>, <code>Models</code>, <code>Notifications</code>, <code>Providers</code>,
+  <code>Rules</code>, <code>Services</code>, <code>Traits</code>. Don't add a new base folder.
+</p>
+
+<h2>Deliberately not used</h2>
+<p>Each of these has its own file in the library explaining what the project does instead:</p>
+<table>
+  <thead><tr><th>Not used</th><th>Instead</th></tr></thead>
+  <tbody>
+    <tr><td><code>app/Actions</code></td><td>Page methods, traits, services</td></tr>
+    <tr><td><code>app/Repositories</code></td><td>Computed properties, scopes, service getters</td></tr>
+    <tr><td><code>app/Jobs</code></td><td>Queued mailables and notifications (<code>ShouldQueue</code>) for sending, scheduled Artisan commands for sweeps</td></tr>
+    <tr><td><code>app/Events</code>, listeners, observers</td><td>A direct call, in the same method or through the service that owns the change, so the order of steps is visible</td></tr>
+    <tr><td><code>app/Policies</code></td><td>Four layers: workspace middleware, page gates, record checks in <code>mount()</code>, and action checks on the model or service</td></tr>
+    <tr><td><code>app/Http/Requests</code></td><td><code>rules()</code> on the component</td></tr>
+  </tbody>
+</table>
+
+<h2>Dependencies</h2>
+<p>Ask before adding a Composer or npm package. Every dependency is a decision the whole project inherits.</p>

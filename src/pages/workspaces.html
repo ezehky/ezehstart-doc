@@ -1,0 +1,37 @@
+<h1>Workspaces and user types</h1>
+<p class="lead">An account's type decides which workspace it signs in to. It's fixed in code, and it isn't the same thing as a role.</p>
+
+<h2>The workspaces</h2>
+<p>Defined in <code>bootstrap/app.php</code>:</p>
+<table>
+  <thead><tr><th>Workspace</th><th>URL prefix</th><th>Route name</th><th>Route file</th><th>Middleware</th></tr></thead>
+  <tbody>
+    <tr><td>Admin</td><td><code>/app-splash</code></td><td><code>admin.</code></td><td><code>routes/admin.php</code></td><td><code>AdminMiddleware</code></td></tr>
+    <tr><td>Member</td><td><code>/app</code></td><td><code>user.</code></td><td><code>routes/user.php</code></td><td><code>UserMiddleware</code></td></tr>
+    <tr><td>Public + auth</td><td><code>/</code></td><td><em>(none)</em></td><td><code>routes/web.php</code></td><td><code>guest</code> / <code>auth</code></td></tr>
+  </tbody>
+</table>
+<p>
+  Some screens are shared, such as the profile and the image and video libraries. They live under
+  <code>pages::shared.*</code> and are routed from both workspace files.
+</p>
+
+<h2>Type is not role</h2>
+<p>
+  <code>users.user_type</code> is the <strong>workspace</strong> an account signs in to, and it's
+  fixed in code by <code>UserTypeEnum</code>. A <strong>role</strong> is a row in
+  <code>roles</code> that an administrator creates from the dashboard. Roles only divide up the
+  admin workspace, and <strong>only admins have them</strong>. Members have no role at all.
+</p>
+<p>
+  Every decision that depends on type (the dashboard route, the label, whether it carries roles)
+  is a method on the enum case. When you add a case, the exhaustive <code>match</code> arms fail
+  loudly until you've handled it.
+</p>
+<div class="callout">
+  <p><code>UserTypeEnum::dashboardRoute()</code> returns a <strong>URL</strong>, not a route name.
+  Pass it to <code>redirect()->to()</code>. <code>redirect()->route()</code> throws.</p>
+</div>
+
+<h2>Adding a third workspace</h2>
+<p>It takes three files and two <code>match</code> arms. See <a href="#/extending/a-third-workspace">Extending the kit</a>.</p>

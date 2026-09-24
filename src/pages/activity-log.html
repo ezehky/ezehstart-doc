@@ -1,0 +1,28 @@
+<h1>Activity log</h1>
+<p class="lead">Every admin write records what changed and what it changed from.</p>
+
+<h2>Logging a write</h2>
+<p>This is mandatory for every admin write. Capture the changed columns <em>before</em> saving, and log <em>after</em>:</p>
+<pre><code>$log = app(ActivityLogService::class);
+
+$changes = $log-&gt;affectedColumns($post);
+$post-&gt;save();
+
+$log-&gt;logActivity(ActivityActionEnum::UPDATE, 'updated a post', $changes, $post);</code></pre>
+<p>See <code>.agents/my-skills/activity-logging.md</code> for the exact signature and the action and platform enums.</p>
+
+<h2>Retention</h2>
+<p>
+  <strong>Off by default.</strong> <code>security.activity-log-retention-days</code> starts at 0,
+  and <code>activity:prune-logs</code> does nothing until someone sets a window. Throwing away an
+  audit trail should be a deliberate decision. Any value above 0 is floored at 30 days.
+</p>
+<pre><code>php artisan activity:prune-logs --dry-run    <span class="c"># what would go</span>
+php artisan activity:prune-logs --days=90    <span class="c"># prune once, without changing the setting</span></code></pre>
+
+<h2>Notifications</h2>
+<p>
+  In-app notifications are database notifications whose <em>types</em> are rows, not code, so a
+  new type can be added without a deploy. Every account gets a switch for it on their next visit,
+  and announcements are sent to everyone subscribed to a type.
+</p>

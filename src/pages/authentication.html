@@ -1,0 +1,44 @@
+<h1>Authentication</h1>
+<p class="lead">Every common way to sign in, each with its own switch. Turning a switch off closes the route as well as hiding the button.</p>
+
+<h2>Sign-in methods</h2>
+<table>
+  <thead><tr><th>Method</th><th>Default</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>Password</td><td>On</td><td>Registration, sign-in, reset by emailed code, email verification by six-digit code</td></tr>
+    <tr><td>Passwordless</td><td>On</td><td>One emailed code both registers a new account and signs in an existing one</td></tr>
+    <tr><td>Passkeys</td><td>Behind <code>security.passkeys</code></td><td>WebAuthn via <code>spatie/laravel-passkeys</code></td></tr>
+    <tr><td>Social</td><td>Off</td><td>Google, Facebook, GitHub via Socialite. <strong>Members only.</strong></td></tr>
+    <tr><td>Two-factor (TOTP)</td><td>Off</td><td>QR code rendered locally, single-use recovery codes, "remember this device"</td></tr>
+  </tbody>
+</table>
+<p>
+  Admins can use everything <strong>except</strong> social sign-in. Their two-factor and passkeys
+  are managed on the admin profile.
+</p>
+
+<h2>Emailed codes</h2>
+<p>All four code flows (verification, reset, passwordless, account changes) share the same two limits, enforced by <code>WithOtpGuard</code>:</p>
+<ul>
+  <li><strong>Five wrong guesses destroy the code.</strong> A six-digit code has a million possibilities, so an expiry alone isn't enough: with unlimited guesses, the whole range fits inside the window.</li>
+  <li><strong>Another code can't be requested within 60 seconds.</strong> Without this, asking for a new code would undo the destruction.</li>
+</ul>
+<p>The reset code is stored only as a hash, in Laravel's own <code>password_reset_tokens</code> table.</p>
+
+<h2>Hardening</h2>
+<ul>
+  <li><strong>Login throttle</strong>, keyed on the email <em>and</em> the IP address together, so nobody can lock out an address just by knowing it.</li>
+  <li><strong>Password strength</strong> is configurable, and <strong>password history</strong> refuses a password this account has already used.</li>
+  <li><strong>Captcha</strong>: Cloudflare Turnstile on each guest form rather than across the whole site. The widget and its validation rule are always added together by <code>captchaRules()</code>. The captcha stays off, whatever the switch says, until both Turnstile keys are set.</li>
+  <li><strong>Social matching</strong> uses the provider's id first, so someone who changes their Google email isn't left with a second account. The last remaining way to sign in to an account can't be disconnected.</li>
+  <li><strong>Remember-device tokens</strong> are stored only as a hash.</li>
+</ul>
+
+<h2>Passwords</h2>
+<div class="callout warn">
+  <p>Always write a password through <code>PasswordSecurityService</code>. <code>updatePassword()</code>
+  sets the password and files the old hash away in one step. Assigning <code>$user->password</code>
+  directly leaves a gap in the history, and the password in that gap is one the account could
+  quietly go back to.</p>
+</div>
+<p>Passkeys follow the same idea: the package does the cryptography, and <code>PasskeyService</code> does the actual sign-in so the status check, audit trail and login alert all still run.</p>

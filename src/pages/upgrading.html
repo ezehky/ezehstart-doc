@@ -1,0 +1,44 @@
+<h1>Releases and upgrading</h1>
+<p class="lead">How versions are numbered, and what taking a new one involves.</p>
+
+<h2>Versioning</h2>
+<p>
+  The kit follows <a href="https://semver.org/spec/v2.0.0.html" target="_blank" rel="noopener">Semantic Versioning</a>
+  and records every change in <code>CHANGELOG.md</code>, using the
+  <a href="https://keepachangelog.com/en/1.1.0/" target="_blank" rel="noopener">Keep a Changelog</a> format.
+</p>
+<ul>
+  <li>A <strong>minor</strong> release may add tables, enum cases and route names. It won't rename existing ones.</li>
+  <li>A <strong>major</strong> release is the only kind that renames things.</li>
+</ul>
+
+<h2>Release history</h2>
+<table>
+  <thead><tr><th>Version</th><th>Date</th><th>Highlights</th></tr></thead>
+  <tbody>
+    <tr><td>Unreleased</td><td>—</td><td>Multiple roles per admin, <code>users.user_type</code>, video library, data tables, account deletion end to end, data download, impersonation, captcha, email marketing, currencies, languages, passkeys. <strong>Includes renames, so it's a major.</strong></td></tr>
+    <tr><td>1.2.0</td><td>2026-09-09</td><td>Sign-in hardening, image library, blog, transaction ledger, countries</td></tr>
+    <tr><td>1.1.0</td><td>2026-09-09</td><td>Versioned legal pages and consent capture, FAQs, confirmation modals, icon picker, activity log</td></tr>
+    <tr><td>1.0.0</td><td>2026-09-04</td><td>First release</td></tr>
+  </tbody>
+</table>
+
+<h2>Upgrading to the next major</h2>
+<p>If you're starting a project from the current branch, there's nothing to do. If your project is built on 1.2.0, the following were renamed and need replacing throughout your code:</p>
+<table>
+  <thead><tr><th>Was</th><th>Is</th></tr></thead>
+  <tbody>
+    <tr><td><code>users.type</code></td><td><code>users.user_type</code></td></tr>
+    <tr><td><code>user_roles</code> table</td><td><code>role_user</code> pivot</td></tr>
+    <tr><td><code>UserRoleEnum</code></td><td><code>UserTypeEnum</code></td></tr>
+    <tr><td><code>ImageVisibilityEnum</code></td><td><code>MediaVisibilityEnum</code> (stored values unchanged)</td></tr>
+    <tr><td><code>admin.members</code></td><td><code>admin.users</code></td></tr>
+    <tr><td><code>admin.site-config</code></td><td><code>admin.config.site</code></td></tr>
+    <tr><td><code>&lt;x-status&gt;</code></td><td><code>&lt;x-util.e-badge&gt;</code></td></tr>
+  </tbody>
+</table>
+<p>
+  Role assignments don't carry across, because the old pivot held a status column and the new one
+  doesn't. Re-assign them from <strong>Admins → Manage roles</strong>. After that, start the
+  <a href="#/scheduler">scheduler</a>, because four of the scheduled commands are new.
+</p>
