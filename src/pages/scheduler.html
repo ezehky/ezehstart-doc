@@ -10,9 +10,14 @@
     <tr><td><code>account:process-deletions</code></td><td>Daily 08:15</td><td>Anonymizes or removes accounts whose grace period has ended</td></tr>
     <tr><td><code>blog:publish-scheduled</code></td><td>Every minute</td><td>Publishes posts that have reached their time and notifies subscribers. Each post is claimed first, so overlapping runs can't announce it twice</td></tr>
     <tr><td><code>email:send-campaigns</code></td><td>Every minute</td><td>Sends due campaigns in chunks of 200 recipients and schedules the next occurrence of recurring ones</td></tr>
+    <tr><td><code>account:prune-unverified</code></td><td>Daily 08:30</td><td>Warns unverified accounts, then removes them after the grace period. Does nothing while verification is off</td></tr>
+    <tr><td><code>account:send-inactivity-reminders</code></td><td>Daily 10:00</td><td>Sends one "we missed you" per absence</td></tr>
+    <tr><td><code>payments:reconcile</code></td><td>Every 10 minutes</td><td>Asks the vendor about checkouts still processing, and settles what has finished</td></tr>
+    <tr><td><code>payments:sync-subscriptions</code></td><td>Hourly</td><td>Keeps subscriptions in step with their vendor, and ends expired ones and finished trials</td></tr>
+    <tr><td><code>payments:prune-traces</code></td><td>Daily 07:50</td><td>Removes payment traces past their retention window</td></tr>
   </tbody>
 </table>
-<p>Each command accepts <code>--dry-run</code>, which reports what it would do without doing it.</p>
+<p>The account, blog, email and activity-log commands, and <code>payments:reconcile</code>, accept <code>--dry-run</code>, which reports what they would do without doing it.</p>
 
 <h2>Running the scheduler</h2>
 <p>In development:</p>
@@ -23,8 +28,8 @@
 <h2>The queue</h2>
 <p>
   <code>composer dev</code> starts a queue worker for you. In production, keep
-  <code>php artisan queue:work</code> running under a process supervisor. The kit has no
-  <code>app/Jobs</code> folder (see <a href="#/house-style">the house style</a>). The queue is
-  driven by mailables and the in-app notification, all of which implement
-  <code>ShouldQueue</code>, so without a worker no email goes out.
+  <code>php artisan queue:work</code> running under a process supervisor. Mailables and the in-app
+  notification implement <code>ShouldQueue</code>, so without a worker no email goes out. Payment
+  webhooks are processed on the queue too, by <code>ProcessPaymentWebhook</code>. Without a worker,
+  a payment is only confirmed when the reconcile sweep reaches it.
 </p>

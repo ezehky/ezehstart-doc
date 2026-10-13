@@ -1,0 +1,156 @@
+<h1>Payments and subscriptions</h1>
+<p class="lead">Gateway checkouts, refunds and vendor-billed subscriptions for seven providers, all written through the ledger and settled only once the vendor confirms them.</p>
+
+<h2>Vendors</h2>
+<p>
+  Paystack, Flutterwave, Stripe, PayPal, OPay, Monnify and Korapay ship. Each is plain
+  <code>Http::</code> calls on guzzle 8, with no vendor SDK as a dependency. A vendor is offered
+  once every key it needs is set in the environment.
+</p>
+<table>
+  <thead><tr><th>Vendor</th><th>Payments and refunds</th><th>Subscriptions</th></tr></thead>
+  <tbody>
+    <tr><td>Paystack, Flutterwave, Stripe, PayPal</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td>OPay, Monnify, Korapay</td><td>Yes</td><td>No, so they're never offered for a plan</td></tr>
+  </tbody>
+</table>
+<p>
+  Keys live in <code>.env</code> only, never in the site configuration. An admin screen that
+  can show a secret makes it not a secret. Copy the payments block from <code>.env.example</code>
+  and fill in the vendors you'll use. Leave the rest empty to keep them off. Then check them:
+</p>
+<pre><code>php artisan payments:health   <span class="c"># one authenticated call to each configured vendor</span></code></pre>
+<p>
+  <code>config/payments.php</code> holds the rest: the checkout expiry (60 minutes), an optional
+  webhook IP allowlist, the queue, the reconcile windows, tracing, and HTTP timeouts.
+</p>
+
+<h2>How a payment is settled</h2>
+<ol>
+  <li><code>PaymentService::checkout()</code> writes a <code>PROCESSING</code> ledger row and sends the customer to the vendor.</li>
+  <li>The vendor reports back in up to three ways: it sends the customer to the <strong>callback</strong>, it posts a <strong>webhook</strong>, and every ten minutes the <strong>reconcile sweep</strong> asks it directly.</li>
+  <li>All three end in <code>PaymentService::verify()</code>, which asks the vendor, locks the row, and settles it <strong>once</strong>. A second answer does nothing.</li>
+</ol>
+<div class="callout warn">
+  <p><strong>Nothing the browser carries back is believed.</strong> The callback URL contains
+  only the kit's own reference, and the status always comes from the vendor. Never settle a
+  <code>PAYMENT_GATEWAY</code> row any other way.</p>
+</div>
+<ul>
+  <li><strong>Short or wrong-currency money is held.</strong> The row stays <code>PROCESSING</code> with <code>failure_reason</code> set, and admins are notified. Money landing on a row that's already closed becomes <code>CONFIRMED_BUT_NOT_LOGGED</code>. A person settles both.</li>
+  <li><strong>Webhooks</strong> arrive at <code>POST /webhooks/payments/{vendor}</code>. The signature is checked before the body is read, the call is stored in <code>payment_webhooks</code> (duplicates are dropped by <code>unique(vendor, event_key)</code>), and the work happens on the queue. Turning signature checks off is honoured in <code>local</code> and <code>testing</code> only.</li>
+  <li><strong>The callback</strong>, <code>GET /payments/{vendor}/callback/{reference}</code>, is outside the auth group, so a session that expires during checkout doesn't cost the customer their confirmation. It's sent with each checkout, so you don't register it anywhere.</li>
+  <li><strong>Tracing</strong> (<code>PAYMENTS_TRACING</code>, off by default) stores one redacted row per vendor call in <code>payment_traces</code>, kept for 30 days.</li>
+</ul>
+
+<h2>Taking a payment for something</h2>
+<p>
+  Members get <strong>Add funds</strong> on their transactions page, which is a deposit. To charge
+  for something of your own, pass its group, the <code>DIRECT</code> type, the <code>NONE</code>
+  wallet, and the model being paid for:
+</p>
+<pre><code>$result = app(PaymentService::class)->checkout(
+    $user,
+    PaymentVendorEnum::from($this->vendor),
+    $order->total,
+    "Order {$order->number}",
+    TransactionGroupEnum::PURCHASE,
+    TransactionTypeEnum::DIRECT,
+    TransactionWalletEnum::NONE,
+    against: $order,
+);
+
+$this->respondError($result, \is_string($result));
+
+return $this->redirect($result->gateway->gateway_url);</code></pre>
+<p>Fulfil the order in a listener, so the kit never needs to know what an order is:</p>
+<pre><code><span class="c">// app/Listeners/FulfilOrders.php, discovered automatically</span>
+public function handle(PaymentSucceeded $event): void
+{
+    if ($event->transaction->transactionable instanceof Order) {
+        app(OrderService::class)->markPaid($event->transaction->transactionable);
+    }
+}</code></pre>
+<p>
+  The events are <code>PaymentInitialized</code>, <code>PaymentSucceeded</code>,
+  <code>PaymentFailed</code>, <code>PaymentNeedsReview</code>, <code>PaymentWebhookReceived</code>,
+  <code>RefundInitiated</code>, <code>RefundProcessed</code>, <code>RefundFailed</code>,
+  <code>SubscriptionStarted</code>, <code>SubscriptionRenewed</code>,
+  <code>SubscriptionPaymentFailed</code>, <code>SubscriptionCancelled</code> and
+  <code>SubscriptionEnded</code>.
+</p>
+
+<h2>Refunds</h2>
+<p>
+  A refund is <strong>its own <code>REFUND</code> row</strong> pointing at the payment. The payment
+  isn't edited. It stays <code>CONFIRMED</code>, because it happened. Admins refund from the
+  <strong>Transactions</strong> screen, which also has "check with provider".
+</p>
+<ul>
+  <li><strong>Partial or full.</strong> What's left to refund is the payment minus every refund that's <code>CONFIRMED</code> or <code>PROCESSING</code>. A failed refund frees its amount again.</li>
+  <li><strong>Locked.</strong> The check and the new row are written under a lock on the payment, so two admins can't refund more than came in between them. A deposit the member has partly spent can't be refunded past their balance.</li>
+  <li><strong>Through the vendor or by hand.</strong> A gateway payment is refunded through the vendor and stays <code>PROCESSING</code> until the vendor confirms it. An approved bank transfer is paid back by hand and recorded as <code>CONFIRMED</code> straight away.</li>
+  <li>A refund made from the vendor's own dashboard arrives as a webhook with nothing behind it, so it raises <code>PaymentNeedsReview</code>.</li>
+</ul>
+
+<h2>Subscriptions</h2>
+<p>
+  The vendor does the billing: it holds the card, runs the schedule, and retries failed charges.
+  Admins manage plans on <strong>Subscriptions</strong> (gate <code>subscriptions</code>), and
+  members choose one on their own <strong>Subscriptions</strong> page.
+</p>
+<table>
+  <thead><tr><th>Piece</th><th>How it works</th></tr></thead>
+  <tbody>
+    <tr><td>Plan</td><td><code>subscription_plans</code>. It can be free, recommended, carry trial days, or include another plan ("Everything in Basic, plus")</td></tr>
+    <tr><td>Price</td><td><code>subscription_plan_prices</code>, one row per interval. The card works out what a longer interval saves. Each price is synced to a vendor when its first subscriber arrives</td></tr>
+    <tr><td>Features</td><td><code>subscription_plan_features</code>, one row per <code>SubscriptionFeatureEnum</code> case, with an optional limit (null means unlimited)</td></tr>
+    <tr><td>Free plan</td><td>At most one. It's the fallback when nothing else gives access, with no row per account</td></tr>
+    <tr><td>Trial</td><td>Run by the kit, not the vendor, with no card. One per account, ended as soon as the member pays</td></tr>
+    <tr><td>Renewal</td><td>Arrives by webhook and is checked with the vendor. Each charge is recorded once</td></tr>
+    <tr><td>Failed renewal</td><td>The subscription becomes <code>PAST_DUE</code>. Whether access continues is up to your project</td></tr>
+    <tr><td>Cancel</td><td>Billing stops. Access lasts until <code>current_period_ends_at</code>, then the hourly sync marks it <code>EXPIRED</code></td></tr>
+  </tbody>
+</table>
+<h3>Gating a paid feature</h3>
+<p>Ask about a feature, never about a plan name:</p>
+<pre><code>app(SubscriptionService::class)->allows($user, SubscriptionFeatureEnum::API_ACCESS);
+app(SubscriptionService::class)->limitFor($user, SubscriptionFeatureEnum::PROJECTS);
+<span class="c">// limitFor(): null is unlimited, 0 is not granted</span></code></pre>
+<p>
+  Both count a cancelled subscription with time left and a running trial, and fall back to the
+  free plan.
+</p>
+<div class="callout">
+  <p>The four shipped <code>SubscriptionFeatureEnum</code> cases are examples. Replace them with
+  your own before creating plans. A case can't be removed while plan rows still use it.</p>
+</div>
+<p>No coupons ship. A yearly price below twelve monthly ones is the built-in discount.</p>
+
+<h2>Commands</h2>
+<table>
+  <thead><tr><th>Command</th><th>When</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td><code>payments:reconcile</code></td><td>Every 10 minutes</td><td>Asks the vendor about checkouts still processing after 15 minutes, and closes unpaid ones 24 hours after they expire</td></tr>
+    <tr><td><code>payments:sync-subscriptions</code></td><td>Hourly</td><td>Keeps each subscription in step with its vendor, and ends cancelled subscriptions and trials whose time is up</td></tr>
+    <tr><td><code>payments:prune-traces</code></td><td>Daily 07:50</td><td>Removes traces older than the retention window</td></tr>
+    <tr><td><code>payments:retry-webhooks</code></td><td>By hand</td><td>Puts failed webhooks back on the queue (<code>--id=</code>, <code>--dry-run</code>)</td></tr>
+    <tr><td><code>payments:health</code></td><td>By hand</td><td>Checks each configured vendor's keys. It's a command rather than a public endpoint on purpose</td></tr>
+  </tbody>
+</table>
+
+<h2>Going live</h2>
+<ul>
+  <li>Register <code>https://your-site/webhooks/payments/{vendor}</code> as the webhook URL in each vendor's dashboard. <code>webhooks/*</code> is already exempt from CSRF.</li>
+  <li>Run a queue worker. Webhooks are processed on the queue, and the reconcile sweep is only a safety net.</li>
+  <li>Grant the <code>payments</code> and <code>subscriptions</code> gates to the roles that should see those screens.</li>
+</ul>
+
+<h2>Adding a vendor</h2>
+<ol>
+  <li>A case in <code>PaymentVendorEnum</code>, with its <code>label()</code> and <code>gateway()</code> arms.</li>
+  <li>A block under <code>payments.vendors</code> in <code>config/payments.php</code>, and the keys in <code>.env.example</code>.</li>
+  <li><code>app/Services/Payment/Gateways/{Vendor}GatewayService.php</code>, extending <code>BasePaymentGateway</code>. It implements <code>initialize()</code>, <code>verify()</code>, <code>verifyWebhook()</code>, <code>parseWebhook()</code> and <code>ping()</code>.</li>
+  <li>Tests: a signature test using the vendor's real scheme, and a checkout-and-verify test with <code>Http::fake()</code>.</li>
+</ol>
+<p>The full contract is in <code>.agents/my-skills/payments.md</code> in the kit.</p>

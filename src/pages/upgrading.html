@@ -16,15 +16,58 @@
 <table>
   <thead><tr><th>Version</th><th>Date</th><th>Highlights</th></tr></thead>
   <tbody>
-    <tr><td>Unreleased</td><td>—</td><td>Multiple roles per admin, <code>users.user_type</code>, video library, data tables, account deletion end to end, data download, impersonation, captcha, email marketing, currencies, languages, passkeys. <strong>Includes renames, so it's a major.</strong></td></tr>
+    <tr><td>2.2.0</td><td>2026-10-13</td><td>Payments for seven vendors, refunds, vendor-billed subscriptions with trials and per-feature gating, contact locations on the home page</td></tr>
+    <tr><td>2.1.0</td><td>2026-10-02</td><td>Unverified accounts warned then removed, "we missed you" reminders, password reset that doesn't reveal registered addresses</td></tr>
+    <tr><td>2.0.0</td><td>2026-09-25</td><td>Multiple roles per admin, <code>users.user_type</code>, video library, data tables, account deletion end to end, data download, impersonation, captcha, email marketing, currencies, languages, passkeys. <strong>Includes renames, so it's a major.</strong></td></tr>
     <tr><td>1.2.0</td><td>2026-09-09</td><td>Sign-in hardening, image library, blog, transaction ledger, countries</td></tr>
     <tr><td>1.1.0</td><td>2026-09-09</td><td>Versioned legal pages and consent capture, FAQs, confirmation modals, icon picker, activity log</td></tr>
     <tr><td>1.0.0</td><td>2026-09-04</td><td>First release</td></tr>
   </tbody>
 </table>
+<p>If you're starting a project from the current kit, there's nothing to do. The sections below are for a project built on an earlier version.</p>
 
-<h2>Upgrading to the next major</h2>
-<p>If you're starting a project from the current branch, there's nothing to do. If your project is built on 1.2.0, the following were renamed and need replacing throughout your code:</p>
+<h2>Upgrading to 2.2.0</h2>
+<pre><code>php artisan migrate</code></pre>
+<p>
+  That creates the payment and subscription tables. <strong><code>transaction_gateways</code> needs
+  five columns by hand</strong>, because they were folded into its create migration, which an
+  existing install has already run. Add them in a migration of your own:
+</p>
+<pre><code>Schema::table('transaction_gateways', function (Blueprint $table) {
+    $table->string('currency', 10)->nullable()->after('vendor');
+    $table->string('channel', 100)->nullable();
+    $table->string('failure_reason')->nullable();
+    $table->timestamp('paid_at')->nullable();
+    $table->timestamp('verified_at')->nullable();
+});</code></pre>
+<p>
+  The kit's other <code>add_*</code> migrations were folded into their <code>create_*_table</code>
+  files too, but those columns already exist on a 2.1.0 install. Don't run
+  <code>migrate:fresh</code> to catch up.
+</p>
+<ul>
+  <li>Copy the payments block from <code>.env.example</code>, fill in the vendors you'll use, and run <code>php artisan payments:health</code>.</li>
+  <li>Register <code>https://your-site/webhooks/payments/{vendor}</code> in each vendor's dashboard.</li>
+  <li>Run a queue worker and the <a href="#/scheduler">scheduler</a>. Three scheduled commands are new.</li>
+  <li>Replace the example <code>SubscriptionFeatureEnum</code> cases before creating plans.</li>
+  <li>Grant the <code>payments</code> and <code>subscriptions</code> gates to the roles that need them.</li>
+</ul>
+<p>See <a href="#/payments">Payments and subscriptions</a>.</p>
+
+<h2>Upgrading to 2.1.0</h2>
+<pre><code>php artisan migrate
+php artisan lang:translate fr
+php artisan lang:translate es</code></pre>
+<p>
+  The migration adds two nullable columns to <code>users</code>. Two scheduled commands are new and
+  both are <strong>on</strong> by default. Run <code>php artisan account:prune-unverified --dry-run</code>
+  once before the first real night on an install that has been collecting unverified sign-ups, to
+  see who it would warn. See <a href="#/accounts">Account lifecycle</a>.
+</p>
+<p>A test that expected forgot password to refuse an unknown address now gets the code step instead.</p>
+
+<h2>Upgrading to 2.0.0</h2>
+<p>If your project is built on 1.2.0, the following were renamed and need replacing throughout your code:</p>
 <table>
   <thead><tr><th>Was</th><th>Is</th></tr></thead>
   <tbody>

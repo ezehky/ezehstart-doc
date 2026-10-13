@@ -28,6 +28,7 @@ export const nav = [
       { slug: 'media', title: 'Image and video libraries' },
       { slug: 'blog', title: 'Blog' },
       { slug: 'money', title: 'Ledger and currencies' },
+      { slug: 'payments', title: 'Payments and subscriptions' },
       { slug: 'email', title: 'Email and newsletter' },
       { slug: 'policies', title: 'Legal pages and consent' },
       { slug: 'languages', title: 'Languages' },

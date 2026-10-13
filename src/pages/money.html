@@ -10,8 +10,12 @@
   <li><strong>Balances are derived</strong> from confirmed rows under a row lock, never stored as a free-standing number, so a balance can't silently disagree with the ledger that explains it.</li>
   <li><strong>Money is integer minor units</strong> throughout (see <code>MoneyCast</code>).</li>
   <li>Administrators get a <strong>review queue</strong> and a <strong>manual adjustment</strong> that records who moved what, and why.</li>
-  <li>Members see their own statement at <code>/app/transactions</code>.</li>
+  <li>Members see their own statement at <code>/app/transactions</code>, with <strong>Add funds</strong> when a payment vendor is configured.</li>
 </ul>
+<p>
+  Gateway payments, refunds and subscriptions all write through this ledger. See
+  <a href="#/payments">Payments and subscriptions</a>.
+</p>
 
 <h2>Currencies</h2>
 <p>

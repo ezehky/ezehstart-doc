@@ -13,6 +13,37 @@
   <code>user.anonymous-after-deletion</code> chooses between anonymizing and removing.
 </p>
 
+<h2>Unverified accounts</h2>
+<p>
+  An account that never verifies its address holds a unique email forever.
+  <code>account:prune-unverified</code> (daily, 08:30) deals with them:
+</p>
+<ul>
+  <li><strong>Warned first, then removed.</strong> One warning goes out once the notice days have passed since sign-up (default 2). The account is removed once the grace period after that warning has passed (default: delete on day 3). The grace period counts from the <em>warning</em>, so nobody is removed on the same run that warns them.</li>
+  <li><strong>Never while verification is off</strong>, because then every account is unverified.</li>
+  <li><strong>Only active member accounts.</strong> Admins, newsletter rows, accounts already pending deletion, and <strong>any account with ledger rows</strong> are never touched.</li>
+  <li>Removal goes through <code>AccountDeletionService::hardDelete()</code>, and each one is also written to the <code>ezeh</code> log channel, because a scheduled run has no signed-in actor to audit.</li>
+</ul>
+<p>
+  The settings are on <strong>Site configuration &rarr; Security</strong>, under Email Verification:
+  <code>email-settings.unverified-auto-delete</code>, <code>unverified-notice-days</code> and
+  <code>unverified-delete-days</code>.
+</p>
+
+<h2>"We missed you"</h2>
+<p>
+  <code>account:send-inactivity-reminders</code> (daily, 10:00) emails a member who hasn't been
+  seen for 30 days. Only <strong>one is sent per absence</strong>: another goes out only after the
+  member has been back. While verification is on, only verified addresses are emailed. Suspended
+  accounts, admins and accounts never seen at all are skipped. The settings are
+  <code>user.inactivity-reminder</code> and <code>user.inactivity-reminder-days</code>.
+</p>
+<p>
+  Both emails are template-builder slots (<code>SystemEmailEnum::UNVERIFIED_WARNING</code> and
+  <code>INACTIVITY_REMINDER</code>). Both commands take <code>--dry-run</code>. Run the prune with it
+  once before its first real night on an install that already has unverified sign-ups.
+</p>
+
 <h2>Deleted accounts</h2>
 <p>
   Anonymized rows are <strong>soft-deleted</strong>, so every ordinary query skips them, including

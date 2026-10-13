@@ -20,12 +20,19 @@ vendor/bin/phpstan analyse --memory-limit=1G</code></pre>
     <tr><td><code>account:process-deletions</code></td><td>Anonymize or remove accounts whose window has ended</td></tr>
     <tr><td><code>blog:publish-scheduled</code></td><td>Publish due posts and notify subscribers</td></tr>
     <tr><td><code>email:send-campaigns</code></td><td>Send due campaigns in chunks</td></tr>
+    <tr><td><code>account:prune-unverified</code></td><td>Warn, then remove, accounts that never verified</td></tr>
+    <tr><td><code>account:send-inactivity-reminders</code></td><td>Send "we missed you" to members away for 30 days</td></tr>
     <tr><td><code>activity:prune-logs</code></td><td>Apply the activity-log retention window</td></tr>
+    <tr><td><code>payments:reconcile</code></td><td>Settle gateway checkouts a webhook never confirmed</td></tr>
+    <tr><td><code>payments:sync-subscriptions</code></td><td>Keep subscriptions in step with their vendor</td></tr>
+    <tr><td><code>payments:prune-traces</code></td><td>Apply the payment-trace retention window</td></tr>
+    <tr><td><code>payments:retry-webhooks</code></td><td>Put failed payment webhooks back on the queue</td></tr>
+    <tr><td><code>payments:health</code></td><td>Check every configured payment vendor's keys</td></tr>
     <tr><td><code>lang:extract</code></td><td>Collect translatable strings into <code>lang/en.json</code></td></tr>
     <tr><td><code>lang:translate {code}</code></td><td>Machine-translate into another language (development only)</td></tr>
   </tbody>
 </table>
-<p>The scheduled commands all accept <code>--dry-run</code>.</p>
+<p>The scheduled account, blog, email and activity-log commands accept <code>--dry-run</code>, as do <code>payments:reconcile</code> and <code>payments:retry-webhooks</code>.</p>
 
 <h2>Seeding</h2>
 <pre><code>php artisan db:seed                      <span class="c"># roles, countries, notification types, config, one admin</span>

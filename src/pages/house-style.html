@@ -40,12 +40,22 @@
   <li><strong>Table changes</strong> go in a new <code>add_*_to_*_table</code> migration.</li>
 </ul>
 
-<h2>The thirteen folders</h2>
+<h2>The sixteen folders</h2>
 <p>
   <code>app/</code> contains exactly these: <code>Casts</code>, <code>Console</code>,
-  <code>Contracts</code>, <code>Enums</code>, <code>Helpers</code>, <code>Http</code>,
-  <code>Mail</code>, <code>Models</code>, <code>Notifications</code>, <code>Providers</code>,
-  <code>Rules</code>, <code>Services</code>, <code>Traits</code>. Don't add a new base folder.
+  <code>Contracts</code>, <code>Enums</code>, <code>Events</code>, <code>Helpers</code>,
+  <code>Http</code>, <code>Jobs</code>, <code>Listeners</code>, <code>Mail</code>,
+  <code>Models</code>, <code>Notifications</code>, <code>Providers</code>, <code>Rules</code>,
+  <code>Services</code>, <code>Traits</code>. Don't add a new base folder. A feature that owns
+  several services gets one folder under <code>Services/</code>, such as
+  <code>Services/Payment/</code>.
+</p>
+<p>
+  <code>Events</code>, <code>Listeners</code> and <code>Jobs</code> joined for payments. An event
+  is for an extension point a project hooks into (fulfilling an order on
+  <code>PaymentSucceeded</code>). A Job is for work that must be retried away from the request
+  (a payment webhook). Everywhere else, a direct call through the owning service is still the
+  rule. <code>events.md</code> and <code>jobs.md</code> in the library say when each is right.
 </p>
 
 <h2>Deliberately not used</h2>
@@ -55,8 +65,7 @@
   <tbody>
     <tr><td><code>app/Actions</code></td><td>Page methods, traits, services</td></tr>
     <tr><td><code>app/Repositories</code></td><td>Computed properties, scopes, service getters</td></tr>
-    <tr><td><code>app/Jobs</code></td><td>Queued mailables and notifications (<code>ShouldQueue</code>) for sending, scheduled Artisan commands for sweeps</td></tr>
-    <tr><td><code>app/Events</code>, listeners, observers</td><td>A direct call, in the same method or through the service that owns the change, so the order of steps is visible</td></tr>
+    <tr><td>Observers</td><td>A direct call, in the same method or through the service that owns the change, so the order of steps is visible</td></tr>
     <tr><td><code>app/Policies</code></td><td>Four layers: workspace middleware, page gates, record checks in <code>mount()</code>, and action checks on the model or service</td></tr>
     <tr><td><code>app/Http/Requests</code></td><td><code>rules()</code> on the component</td></tr>
   </tbody>

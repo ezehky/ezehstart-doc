@@ -24,6 +24,12 @@
   <li><strong>Another code can't be requested within 60 seconds.</strong> Without this, asking for a new code would undo the destruction.</li>
 </ul>
 <p>The reset code is stored only as a hash, in Laravel's own <code>password_reset_tokens</code> table.</p>
+<p>
+  <strong>Password reset never says whether an address is registered.</strong> Any well-formed
+  address moves on to the code step with the same reply, and only a real account is sent a code.
+  The resend limit applies to every address, known or not, so "please wait" doesn't give the
+  answer away either.
+</p>
 
 <h2>Hardening</h2>
 <ul>

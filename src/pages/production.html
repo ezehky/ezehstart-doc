@@ -23,6 +23,8 @@
   <li>Back up the <strong>site configuration file</strong> on the local disk as well as the database. It isn't a table.</li>
   <li>Install <code>jpegoptim</code>, <code>optipng</code> and <code>pngquant</code> if you want uploads optimised.</li>
   <li>Set the Turnstile keys before turning the captcha on.</li>
+  <li>For payments: set live keys for each vendor you use, run <code>php artisan payments:health</code>, and register <code>/webhooks/payments/{vendor}</code> in each vendor's dashboard. Keep <code>PAYMENTS_WEBHOOK_VERIFY_SIGNATURE</code> on. See <a href="#/payments">Payments and subscriptions</a>.</li>
+  <li>Replace the example <code>SubscriptionFeatureEnum</code> cases and the three placeholder contact locations.</li>
 </ul>
 
 <h2>Security review</h2>
