@@ -8,6 +8,15 @@
   <li>The public post page shows <strong>related reading</strong>, plus an author card for posts written by an Author.</li>
 </ul>
 
+<h2>The public pages</h2>
+<p>
+  <code>/blog</code> and <code>/blog/{slug}</code> are rendered by <code>Site\BlogController</code>
+  (<code>index</code>, <code>show</code>) into <code>resources/views/site/blog/</code>, not by
+  Livewire. They're read-only, so plain views are crawlable and need no snapshot. The category,
+  search and page filters are query strings. The show page refuses anything that isn't live, so
+  drafts and scheduled posts can't be reached by guessing a slug.
+</p>
+
 <h2>Categories and tags</h2>
 <p>
   Categories are <strong>polymorphic</strong>: one <code>categories</code> table serves every kind

@@ -9,6 +9,11 @@
   <li>If it <em>changes</em> an account, add the impersonation <code>abort_if</code> to <code>mount()</code>.</li>
   <li>Log every admin write, confirm every destructive action, and write the test.</li>
 </ol>
+<p>
+  A <strong>read-only public page</strong> is different: add a <code>Site\{Section}Controller</code>,
+  a view under <code>resources/views/site/</code> wrapped in <code>&lt;x-layouts.site&gt;</code>, and a
+  <code>Route::get()</code> in <code>routes/web.php</code>. See <code>Site\HomeController</code>.
+</p>
 
 <h2>A third workspace</h2>
 <ol>

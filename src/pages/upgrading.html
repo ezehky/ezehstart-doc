@@ -16,6 +16,8 @@
 <table>
   <thead><tr><th>Version</th><th>Date</th><th>Highlights</th></tr></thead>
   <tbody>
+    <tr><td>2.3.0</td><td>2026-10-30</td><td>Public pages on controllers, policies and FAQs in the rich-text editor, per-vendor processing fees, folder import for the image library, the <code>brand-*</code> palette</td></tr>
+    <tr><td>2.2.1</td><td>2026-10-20</td><td>A <code>payments</code> log channel; public links load full pages instead of using <code>wire:navigate</code></td></tr>
     <tr><td>2.2.0</td><td>2026-10-13</td><td>Payments for seven vendors, refunds, vendor-billed subscriptions with trials and per-feature gating, contact locations on the home page</td></tr>
     <tr><td>2.1.0</td><td>2026-10-02</td><td>Unverified accounts warned then removed, "we missed you" reminders, password reset that doesn't reveal registered addresses</td></tr>
     <tr><td>2.0.0</td><td>2026-09-25</td><td>Multiple roles per admin, <code>users.user_type</code>, video library, data tables, account deletion end to end, data download, impersonation, captcha, email marketing, currencies, languages, passkeys. <strong>Includes renames, so it's a major.</strong></td></tr>
@@ -25,6 +27,38 @@
   </tbody>
 </table>
 <p>If you're starting a project from the current kit, there's nothing to do. The sections below are for a project built on an earlier version.</p>
+
+<h2>Upgrading to 2.3.0</h2>
+<p>There are no migrations. Rebuild the front end:</p>
+<pre><code>npm run build</code></pre>
+<p>
+  <strong>Convert the stored policy and FAQ text to HTML, once.</strong> An existing install holds
+  it as markdown, and the public pages now print it as HTML. Run this in
+  <code>php artisan tinker</code> or a one-off migration. It doesn't touch <code>updated_at</code>,
+  so the date on a legal page stays the same:
+</p>
+<pre><code>use App\Services\BlogService;
+use App\Services\MarkdownService;
+use Illuminate\Support\Facades\DB;
+
+$toHtml = fn (?string $markdown) =&gt; app(BlogService::class)-&gt;sanitize(app(MarkdownService::class)-&gt;toHtml($markdown));
+
+DB::table('faqs')-&gt;orderBy('id')-&gt;each(fn ($row) =&gt; DB::table('faqs')-&gt;where('id', $row-&gt;id)-&gt;update(['answer' =&gt; $toHtml($row-&gt;answer)]));
+DB::table('policies')-&gt;orderBy('id')-&gt;each(fn ($row) =&gt; DB::table('policies')-&gt;where('id', $row-&gt;id)-&gt;update(['content' =&gt; $toHtml($row-&gt;content)]));</code></pre>
+<div class="callout warn">
+  <p><strong>Run it once only.</strong> <code>MarkdownService</code> escapes raw HTML, so a second
+  run turns the converted text back into visible tags.</p>
+</div>
+<ul>
+  <li>Changes you made to the old <code>pages::site.home</code> or <code>pages::site.blog.*</code> Livewire pages move to <code>resources/views/site/</code> and the matching <code>Site\</code> controller.</li>
+  <li><code>&lt;x-form.markdown-field&gt;</code>, <code>kMarkdownFormat()</code> and <code>.markdown-prose</code> are gone. Use <code>&lt;x-form.rich-text&gt;</code>, save through <code>BlogService::sanitize()</code>, and style with <code>.rich-prose</code>.</li>
+  <li>Existing <code>lime-*</code> classes still render correctly. Write new ones as <code>brand-*</code>.</li>
+  <li>Processing fees start at zero, so nothing customers pay changes until you set one. See <a href="#/payments">Payments</a>.</li>
+</ul>
+
+<h2>Upgrading to 2.2.1</h2>
+<p>Nothing to migrate. If the config is cached, rebuild it so the new <code>payments</code> log channel is registered:</p>
+<pre><code>php artisan config:cache</code></pre>
 
 <h2>Upgrading to 2.2.0</h2>
 <pre><code>php artisan migrate</code></pre>

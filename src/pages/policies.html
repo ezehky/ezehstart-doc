@@ -9,10 +9,17 @@
 
 <h2>The pages</h2>
 <p>
-  <code>/terms</code>, <code>/privacy</code> and <code>/cookies</code> are written in Markdown from
-  <strong>Admin → Policies</strong> and served as plain, crawlable pages with a contents sidebar.
+  <code>/terms</code>, <code>/privacy</code> and <code>/cookies</code> are written in the rich-text editor
+  from <strong>Admin → Policies</strong>, sanitised on save by <code>BlogService::sanitize()</code>,
+  and served as plain, crawlable pages with a contents sidebar.
   Each one is a case in <code>PolicyTypeEnum</code>, and adding a case gives you a new public page
   automatically. The public footer links them straight from the enum.
+</p>
+<p>
+  Every <strong>Heading 2</strong> starts a section with its own anchor. Legal pages get linked from
+  contracts and emails nobody can go back and edit, so pin an anchor at the end of the heading to
+  keep it working after the heading is reworded: <code>5. Refunds {#refunds}</code>. The preview
+  on the admin screen shows where each anchor lands.
 </p>
 <div class="callout">
   <p><code>App\Models\Policy</code> is a <strong>legal document</strong>, not a Laravel

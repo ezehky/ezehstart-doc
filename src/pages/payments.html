@@ -80,6 +80,25 @@ public function handle(PaymentSucceeded $event): void
   <code>SubscriptionEnded</code>.
 </p>
 
+<h2>Processing fees</h2>
+<p>
+  Each vendor can carry a processing fee: a percentage of the price, plus a flat amount, up to an
+  optional cap (0 means no cap). Set it from the <strong>Processing fee</strong> column on
+  <strong>Payments → Gateways</strong>. It's stored in the site configuration under
+  <code>payments.fees</code>. <strong>Every fee is zero</strong> until someone sets one, because
+  passing the card cost on to customers is the owner's decision.
+</p>
+<ul>
+  <li><code>checkout()</code> adds the fee to a <strong>purchase</strong>. The row's amount is the total the vendor is asked for, so <code>verify()</code> checks against the same figure. The fee is also kept as a <code>TransactionChargeEnum::FEE</code> charge row, so a receipt can show it.</li>
+  <li>A <strong>wallet deposit</strong>, including <strong>Add funds</strong>, never carries a fee, because its amount is what lands in the wallet. Manual vendors never carry one either.</li>
+  <li>A change to a fee is logged with the old and new terms, and applies from the next checkout. A payment that's already open keeps its fee.</li>
+</ul>
+<p>
+  Tell the customer before they leave for the vendor. Call
+  <code>app(PaymentFeeService::class)-&gt;feeFor($vendor, $price)</code> in the page's
+  <code>#[Computed]</code> and show it next to the total. Don't work the fee out anywhere else.
+</p>
+
 <h2>Refunds</h2>
 <p>
   A refund is <strong>its own <code>REFUND</code> row</strong> pointing at the payment. The payment

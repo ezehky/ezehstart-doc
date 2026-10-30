@@ -28,6 +28,9 @@
 <h2>The short version</h2>
 <ul>
   <li><strong>Screens</strong> are Livewire single-file components at <code>resources/views/pages/**/⚡name.blade.php</code>, routed with <code>Route::livewire('/path', 'pages::group.name')</code>. There's no <code>app/Livewire</code> folder and no class-based components.</li>
+  <li><strong>A read-only public page is a controller</strong>, not a component. <code>Site\{Section}Controller</code> hands its data to a <code>resources/views/site/</code> view on <code>&lt;x-layouts.site&gt;</code>, and filters are query strings. Only a public page the visitor fills in (such as unsubscribe) is a Livewire page, and a form inside a read-only page is an embedded <code>&lt;livewire:…&gt;</code>.</li>
+  <li><strong>Long text is rich text</strong>: <code>&lt;x-form.rich-text&gt;</code>, sanitised on save with <code>BlogService::sanitize()</code>. Markdown fields are retired.</li>
+  <li><strong>Brand colour</strong> classes use <code>brand-*</code>. <code>lime-*</code> points at the same scale and exists only for Flux's <code>color="lime"</code> prop.</li>
   <li><strong>Validation</strong> lives in <code>protected function rules(): array</code>. Don't use <code>#[Validate]</code> or a <code>$rules</code> property.</li>
   <li><strong>Models</strong> are <code>#[Unguarded]</code>, with a <code>casts()</code> method and <code>#[Scope]</code> scopes. Don't use <code>$fillable</code> or <code>scopeFoo()</code>.</li>
   <li><strong>Business logic</strong> lives in <code>#[Singleton]</code> services, resolved with <code>app()</code> and never with <code>new</code>.</li>

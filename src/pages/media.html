@@ -17,6 +17,20 @@
   <li><strong>Rename without changing the URL</strong>: the title changes, but the stored path doesn't.</li>
   <li>Members have a configurable quota. Administrators don't.</li>
   <li>Uploads are optimised with <code>spatie/laravel-image-optimizer</code> when <code>jpegoptim</code>, <code>optipng</code> and <code>pngquant</code> are installed. Without them, uploads still work, just unoptimised.</li>
+  <li>A folder you've just made opens straight away, in both libraries, since the next upload is usually headed there.</li>
+</ul>
+
+<h3>Folder import</h3>
+<p>
+  Administrators get an <strong>Import</strong> tab that takes whole folders, picked or dropped,
+  and rebuilds them as library folders, up to eight levels deep.
+</p>
+<ul>
+  <li>The settings are chosen <strong>once, before anything is sent</strong>: the parent folder, visibility, shared or personal, and whether to keep the folder structure. They're locked for the rest of the import.</li>
+  <li>The browser sends the images <strong>ten at a time</strong> (<code>resources/js/folder-import.js</code>), well under PHP's file-upload limit and the request time limit.</li>
+  <li>A folder already there with the same name in the same place is <strong>reused</strong>, so importing the same folder twice fills one tree. <code>ImageLibraryService::folderForPath()</code> does the matching.</li>
+  <li>When a single folder was imported, the library opens it at the end.</li>
+  <li>Members never see the tab, and every method checks again on the server.</li>
 </ul>
 
 <h2>Videos</h2>
