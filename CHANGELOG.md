@@ -3,6 +3,36 @@
 All notable changes to the Ezeh Start documentation site. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.2.0] - 2026-11-02
+
+Brings the docs up to kit 2.4.0. It also records the kit 2.2.1 and 2.3.0 updates, which
+went into the pages on 2026-10-30 without an entry here.
+
+### Added
+
+- **Email**: a **Delivery** section for the new Email delivery screen. It lists the four
+  providers and the `.env` keys each needs, explains the fallback to the log and the test
+  send, and warns that the screen overrides `MAIL_MAILER`.
+- **Payments and subscriptions**: Bachs as the eighth vendor and its production webhook
+  secret, a **Cards from abroad** section on international fees and the home country,
+  resuming a cancelled subscription (and why PayPal can't), `SubscriptionResumed` in the
+  event list, and `resumeSubscription()` under "Adding a vendor".
+- **Legal pages and consent**: **Telling members**, the optional email sent when a policy
+  is published.
+- **Releases and upgrading**: 2.4.0 in the history, with its upgrade steps.
+- Kit 2.2.1 and 2.3.0 coverage, added on 2026-10-30: both versions in the release history
+  with their upgrade steps, processing fees, folder import in the image library, public
+  pages on controllers, rich-text policies and FAQs, and the `brand-*` palette.
+
+### Changed
+
+- **Configuration**: the Email delivery screen and the Resend and Brevo keys.
+- **Installation** and **Commands**: `db:seed` also seeds states and regions.
+- **Introduction**: the feature table mentions email delivery, eight vendors, international
+  fees, resuming, and policy emails.
+- **Going to production**: pick a mail provider and send a test, instead of "a real mail
+  driver".
+
 ## [2.1.0] - 2026-10-13
 
 Brings the docs up to kit 2.2.0. They had stopped at kit 2.0.0, which was still listed as

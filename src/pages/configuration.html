@@ -13,12 +13,14 @@
     <tr><td><code>FACEBOOK_CLIENT_ID</code> / <code>_SECRET</code></td><td>Facebook sign-in</td></tr>
     <tr><td><code>GITHUB_CLIENT_ID</code> / <code>_SECRET</code></td><td>GitHub sign-in</td></tr>
     <tr><td><code>TURNSTILE_SITE_KEY</code> / <code>TURNSTILE_SECRET_KEY</code></td><td>Cloudflare Turnstile captcha. The captcha switch has no effect until <strong>both</strong> are set</td></tr>
+    <tr><td><code>RESEND_API_KEY</code> / <code>BREVO_API_KEY</code></td><td>Email through Resend or Brevo, once picked on <a href="#/email/delivery">Email delivery</a>. SMTP uses the standard <code>MAIL_*</code> keys</td></tr>
     <tr><td><code>LARAVEL_PDF_DRIVER</code></td><td><code>dompdf</code> by default, which needs nothing installed. Other laravel-pdf drivers need their own packages</td></tr>
   </tbody>
 </table>
 <p>
   The example environment uses the <code>database</code> driver for sessions, queue and cache, and
-  <code>log</code> for mail, so a fresh clone runs with nothing extra installed.
+  <code>log</code> for mail, so a fresh clone runs with nothing extra installed. The mail service
+  actually used is picked on the Email delivery screen, which overrides <code>MAIL_MAILER</code>.
 </p>
 
 <h2>Site configuration</h2>
@@ -34,6 +36,7 @@
     <tr><td>Security</td><td>Sign-in switches, password policy, captcha, passkeys, activity-log retention</td></tr>
     <tr><td>Preferences</td><td>Newsletter placements, cookie notice, mobile floating menu, account deletion window, data download</td></tr>
     <tr><td>Contact locations</td><td>Offices, branches or desks for the home page's contact section: a label, an address, any number of phones and emails, and an optional map. A map must be a Google Maps or OpenStreetMap embed. You can paste the whole <code>&lt;iframe&gt;</code> or just its <code>src</code>. An empty list hides the section</td></tr>
+    <tr><td>Email delivery</td><td>Which service sends the site's email: the log, Resend, Brevo or SMTP. Keys stay in <code>.env</code>. See <a href="#/email/delivery">Email</a></td></tr>
     <tr><td>Social handles, currencies, email senders, notification types, logs</td><td>One screen each</td></tr>
     <tr><td>JSON editor</td><td>Any key that no screen has a field for yet</td></tr>
   </tbody>

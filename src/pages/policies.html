@@ -32,6 +32,19 @@
   <li>Older versions stay readable at <code>?version=</code>, because consent records point at them.</li>
 </ul>
 
+<h2>Telling members</h2>
+<p>
+  The publish dialog has an <strong>Email all members about this update</strong> box. It's unticked
+  by default and shows how many accounts it would reach. When it's ticked, every active member gets
+  a short notice with the policy's intro and a link to the version now in force.
+</p>
+<ul>
+  <li>Admins, newsletter-only addresses, and suspended or deleting accounts aren't emailed.</li>
+  <li>It's a notice about the service, not marketing, so an account's email switch isn't checked.</li>
+  <li>The emails are queued after the response, one each, in chunks of 200, so they need a queue worker. One that fails to queue is logged and doesn't stop the rest.</li>
+  <li>The activity log records how many members were emailed.</li>
+</ul>
+
 <h2>Consent</h2>
 <ul>
   <li>Terms and privacy are marked as <strong>requiring consent</strong>, so registration asks for it.</li>

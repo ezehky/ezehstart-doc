@@ -1,9 +1,9 @@
 <h1>Payments and subscriptions</h1>
-<p class="lead">Gateway checkouts, refunds and vendor-billed subscriptions for seven providers, all written through the ledger and settled only once the vendor confirms them.</p>
+<p class="lead">Gateway checkouts, refunds and vendor-billed subscriptions for eight providers, all written through the ledger and settled only once the vendor confirms them.</p>
 
 <h2>Vendors</h2>
 <p>
-  Paystack, Flutterwave, Stripe, PayPal, OPay, Monnify and Korapay ship. Each is plain
+  Paystack, Flutterwave, Stripe, PayPal, OPay, Monnify, Korapay and Bachs ship. Each is plain
   <code>Http::</code> calls on guzzle 8, with no vendor SDK as a dependency. A vendor is offered
   once every key it needs is set in the environment.
 </p>
@@ -11,7 +11,7 @@
   <thead><tr><th>Vendor</th><th>Payments and refunds</th><th>Subscriptions</th></tr></thead>
   <tbody>
     <tr><td>Paystack, Flutterwave, Stripe, PayPal</td><td>Yes</td><td>Yes</td></tr>
-    <tr><td>OPay, Monnify, Korapay</td><td>Yes</td><td>No, so they're never offered for a plan</td></tr>
+    <tr><td>OPay, Monnify, Korapay, Bachs</td><td>Yes</td><td>No, so they're never offered for a plan</td></tr>
   </tbody>
 </table>
 <p>
@@ -76,8 +76,8 @@ public function handle(PaymentSucceeded $event): void
   <code>PaymentFailed</code>, <code>PaymentNeedsReview</code>, <code>PaymentWebhookReceived</code>,
   <code>RefundInitiated</code>, <code>RefundProcessed</code>, <code>RefundFailed</code>,
   <code>SubscriptionStarted</code>, <code>SubscriptionRenewed</code>,
-  <code>SubscriptionPaymentFailed</code>, <code>SubscriptionCancelled</code> and
-  <code>SubscriptionEnded</code>.
+  <code>SubscriptionPaymentFailed</code>, <code>SubscriptionCancelled</code>,
+  <code>SubscriptionResumed</code> and <code>SubscriptionEnded</code>.
 </p>
 
 <h2>Processing fees</h2>
@@ -93,10 +93,28 @@ public function handle(PaymentSucceeded $event): void
   <li>A <strong>wallet deposit</strong>, including <strong>Add funds</strong>, never carries a fee, because its amount is what lands in the wallet. Manual vendors never carry one either.</li>
   <li>A change to a fee is logged with the old and new terms, and applies from the next checkout. A payment that's already open keeps its fee.</li>
 </ul>
+<h3>Cards from abroad</h3>
+<p>
+  Most vendors charge more for a card issued in another country, so a vendor can carry a second
+  set of terms for those cards. Turn on <strong>Different fee for cards from abroad</strong> in its
+  fee dialog, and set the <strong>Home country</strong> at the top of the same tab. The terms are
+  stored under <code>payments.fees.{vendor}.international</code> and the country under
+  <code>payments.home-country</code>. Until both are set, every card pays the local fee.
+</p>
+<p>
+  The vendor only says where a card is from after the charge, but the fee is on the row before
+  that. So the terms are chosen up front:
+</p>
+<ul>
+  <li>If your checkout asked the customer, pass the answer as <code>international:</code> to <code>checkout()</code>.</li>
+  <li>Otherwise <code>PaymentFeeService::isInternational()</code> decides from the account's profile country, then the country of its phone number.</li>
+  <li>An account with neither is treated as local, so nobody pays the higher fee on no evidence.</li>
+  <li>A row charged the international terms has <code>fee_terms: international</code> in its meta.</li>
+</ul>
 <p>
   Tell the customer before they leave for the vendor. Call
-  <code>app(PaymentFeeService::class)-&gt;feeFor($vendor, $price)</code> in the page's
-  <code>#[Computed]</code> and show it next to the total. Don't work the fee out anywhere else.
+  <code>app(PaymentFeeService::class)-&gt;feeFor($vendor, $price, $international)</code> in the
+  page's <code>#[Computed]</code> and show it next to the total. Don't work the fee out anywhere else.
 </p>
 
 <h2>Refunds</h2>
@@ -129,8 +147,15 @@ public function handle(PaymentSucceeded $event): void
     <tr><td>Renewal</td><td>Arrives by webhook and is checked with the vendor. Each charge is recorded once</td></tr>
     <tr><td>Failed renewal</td><td>The subscription becomes <code>PAST_DUE</code>. Whether access continues is up to your project</td></tr>
     <tr><td>Cancel</td><td>Billing stops. Access lasts until <code>current_period_ends_at</code>, then the hourly sync marks it <code>EXPIRED</code></td></tr>
+    <tr><td>Resume</td><td>Switches renewal back on while paid time is left. Nothing is charged now; the vendor bills the card on file on the renewal date. Members get <strong>Turn renewal back on</strong>, and admins get <strong>Resume renewal</strong> in the row menu</td></tr>
   </tbody>
 </table>
+<p>
+  Resuming works on Paystack, Flutterwave and Stripe (<code>PaymentVendorEnum::resumesSubscriptions()</code>).
+  A PayPal cancel is final, so a member there subscribes again once the period ends, and their
+  screen tells them so. <code>Subscription::canBeResumed()</code> says whether a row qualifies, and
+  <code>SubscriptionService::resume()</code> does it.
+</p>
 <h3>Gating a paid feature</h3>
 <p>Ask about a feature, never about a plan name:</p>
 <pre><code>app(SubscriptionService::class)->allows($user, SubscriptionFeatureEnum::API_ACCESS);
@@ -161,6 +186,7 @@ app(SubscriptionService::class)->limitFor($user, SubscriptionFeatureEnum::PROJEC
 <h2>Going live</h2>
 <ul>
   <li>Register <code>https://your-site/webhooks/payments/{vendor}</code> as the webhook URL in each vendor's dashboard. <code>webhooks/*</code> is already exempt from CSRF.</li>
+  <li>Bachs needs <code>BACHS_WEBHOOK_SECRET</code> in production: the endpoint's signing secret from the Bachs Developer Portal. Its key picks the host. An <code>sk_live_</code> key goes to the live API, anything else to the sandbox.</li>
   <li>Run a queue worker. Webhooks are processed on the queue, and the reconcile sweep is only a safety net.</li>
   <li>Grant the <code>payments</code> and <code>subscriptions</code> gates to the roles that should see those screens.</li>
 </ul>
@@ -169,7 +195,7 @@ app(SubscriptionService::class)->limitFor($user, SubscriptionFeatureEnum::PROJEC
 <ol>
   <li>A case in <code>PaymentVendorEnum</code>, with its <code>label()</code> and <code>gateway()</code> arms.</li>
   <li>A block under <code>payments.vendors</code> in <code>config/payments.php</code>, and the keys in <code>.env.example</code>.</li>
-  <li><code>app/Services/Payment/Gateways/{Vendor}GatewayService.php</code>, extending <code>BasePaymentGateway</code>. It implements <code>initialize()</code>, <code>verify()</code>, <code>verifyWebhook()</code>, <code>parseWebhook()</code> and <code>ping()</code>.</li>
+  <li><code>app/Services/Payment/Gateways/{Vendor}GatewayService.php</code>, extending <code>BasePaymentGateway</code>. It implements <code>initialize()</code>, <code>verify()</code>, <code>verifyWebhook()</code>, <code>parseWebhook()</code> and <code>ping()</code>. A vendor that bills subscriptions also implements <code>SupportsSubscriptions</code>, including <code>resumeSubscription()</code>. If the vendor can't resume, that method returns a sentence saying so.</li>
   <li>Tests: a signature test using the vendor's real scheme, and a checkout-and-verify test with <code>Http::fake()</code>.</li>
 </ol>
 <p>The full contract is in <code>.agents/my-skills/payments.md</code> in the kit.</p>

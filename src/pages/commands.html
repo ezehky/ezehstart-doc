@@ -35,5 +35,5 @@ vendor/bin/phpstan analyse --memory-limit=1G</code></pre>
 <p>The scheduled account, blog, email and activity-log commands accept <code>--dry-run</code>, as do <code>payments:reconcile</code> and <code>payments:retry-webhooks</code>.</p>
 
 <h2>Seeding</h2>
-<pre><code>php artisan db:seed                      <span class="c"># roles, countries, notification types, config, one admin</span>
+<pre><code>php artisan db:seed                      <span class="c"># roles, countries, regions, notification types, config, one admin</span>
 php artisan db:seed --class=DemoSeeder   <span class="c"># invented people, ledger, posts, FAQs, policies</span></code></pre>

@@ -16,6 +16,7 @@
 <table>
   <thead><tr><th>Version</th><th>Date</th><th>Highlights</th></tr></thead>
   <tbody>
+    <tr><td>2.4.0</td><td>2026-11-02</td><td>Email delivery through Resend, Brevo or SMTP, the Bachs gateway, a separate fee for cards from abroad, resuming a cancelled subscription, emailing members about a new policy, states and regions</td></tr>
     <tr><td>2.3.0</td><td>2026-10-30</td><td>Public pages on controllers, policies and FAQs in the rich-text editor, per-vendor processing fees, folder import for the image library, the <code>brand-*</code> palette</td></tr>
     <tr><td>2.2.1</td><td>2026-10-20</td><td>A <code>payments</code> log channel; public links load full pages instead of using <code>wire:navigate</code></td></tr>
     <tr><td>2.2.0</td><td>2026-10-13</td><td>Payments for seven vendors, refunds, vendor-billed subscriptions with trials and per-feature gating, contact locations on the home page</td></tr>
@@ -27,6 +28,23 @@
   </tbody>
 </table>
 <p>If you're starting a project from the current kit, there's nothing to do. The sections below are for a project built on an earlier version.</p>
+
+<h2>Upgrading to 2.4.0</h2>
+<p>Run the new migration and seed the regions:</p>
+<pre><code>php artisan migrate
+php artisan db:seed --class=RegionSeeder</code></pre>
+<div class="callout warn">
+  <p><strong>An install that sends email today stops until a provider is picked.</strong> The new
+  Email delivery screen overrides <code>MAIL_MAILER</code> and starts on Log only. Straight after
+  deploying, open <strong>Site configuration → Email delivery</strong>, pick your provider (SMTP
+  for an existing <code>MAIL_MAILER=smtp</code> setup), save, and send a test.</p>
+</div>
+<ul>
+  <li>If your project implements <code>SupportsSubscriptions</code> on a gateway of its own, add <code>resumeSubscription()</code>. A vendor that can't resume returns a sentence saying so, as <code>PaypalGatewayService</code> does.</li>
+  <li>For Resend or Brevo, add <code>RESEND_API_KEY</code> or <code>BREVO_API_KEY</code>. For Bachs, add <code>BACHS_SECRET_KEY</code>, plus <code>BACHS_WEBHOOK_SECRET</code> in production.</li>
+  <li>International fees start off and no home country is set, so nothing customers pay changes until you set them.</li>
+  <li>If the config is cached, rebuild it with <code>php artisan config:cache</code>.</li>
+</ul>
 
 <h2>Upgrading to 2.3.0</h2>
 <p>There are no migrations. Rebuild the front end:</p>

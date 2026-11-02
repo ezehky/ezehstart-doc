@@ -18,7 +18,8 @@
 
 <h2>Infrastructure</h2>
 <ul>
-  <li><code>APP_ENV=production</code>, <code>APP_DEBUG=false</code>, a real mail driver, and a production database.</li>
+  <li><code>APP_ENV=production</code>, <code>APP_DEBUG=false</code>, and a production database.</li>
+  <li>A mail provider picked on <a href="#/email/delivery">Email delivery</a>, with a test email sent. Until one is picked, email goes to the log.</li>
   <li>A cron entry for the <a href="#/scheduler">scheduler</a> and a supervised queue worker.</li>
   <li>Back up the <strong>site configuration file</strong> on the local disk as well as the database. It isn't a table.</li>
   <li>Install <code>jpegoptim</code>, <code>optipng</code> and <code>pngquant</code> if you want uploads optimised.</li>

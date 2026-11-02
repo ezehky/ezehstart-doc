@@ -1,5 +1,32 @@
 <h1>Email and newsletter</h1>
-<p class="lead">A template builder, campaigns, a newsletter with no extra table, and system emails an admin can restyle.</p>
+<p class="lead">Where email is delivered, a template builder, campaigns, a newsletter with no extra table, and system emails an admin can restyle.</p>
+
+<h2>Delivery</h2>
+<p>
+  <strong>Admin → Site configuration → Email delivery</strong> picks which service sends the site's
+  email. It starts on <strong>Log only</strong>, which writes every email to the log and delivers
+  nothing.
+</p>
+<table>
+  <thead><tr><th>Provider</th><th>Keys in <code>.env</code></th></tr></thead>
+  <tbody>
+    <tr><td>Log only</td><td>None</td></tr>
+    <tr><td>Resend</td><td><code>RESEND_API_KEY</code>. Needs a verified sending domain in Resend</td></tr>
+    <tr><td>Brevo</td><td><code>BREVO_API_KEY</code>. Needs a verified sender in Brevo</td></tr>
+    <tr><td>SMTP</td><td><code>MAIL_HOST</code> and <code>MAIL_PORT</code>, plus <code>MAIL_USERNAME</code>, <code>MAIL_PASSWORD</code> and <code>MAIL_SCHEME</code> as needed. Covers Mailgun, SendGrid, Zoho, Amazon SES or a host's own mail server</td></tr>
+  </tbody>
+</table>
+<ul>
+  <li><strong>Keys stay in <code>.env</code>.</strong> The screen shows which ones are set, never their values. A provider with a key missing can't be picked.</li>
+  <li><strong>A pick that loses its keys falls back to the log</strong>, so sends don't fail and nothing leaves the server by accident. The screen says when that's happening.</li>
+  <li><strong>Send a test</strong> sends straight away, without the queue, through the provider selected on the screen (saved or not), and shows the provider's own answer.</li>
+  <li>Resend and Brevo are the kit's own HTTP transports in <code>app/Services/Mail/</code>, so there's no SDK to install.</li>
+  <li><code>MailDeliveryService</code> applies the choice when the app boots and again before every queued job, so a running worker picks up a change without a restart.</li>
+</ul>
+<div class="callout warn">
+  <p><strong>The screen's choice overrides <code>MAIL_MAILER</code>.</strong> On an install that
+  already sends over SMTP, pick SMTP here after upgrading, or mail goes to the log.</p>
+</div>
 
 <h2>Template builder</h2>
 <p>
@@ -24,7 +51,7 @@
   <li><strong>Scheduling</strong> in the sender's own time zone, with <strong>recurrence</strong>: daily, weekly, fortnightly, monthly or quarterly. Each occurrence becomes its own campaign.</li>
   <li><code>email:send-campaigns</code> runs every minute and sends in chunks of 200 recipients.</li>
   <li><strong>Sent</strong> keeps a history of what went out, and to whom.</li>
-  <li><strong>Senders</strong>: the default address, or a custom domain.</li>
+  <li><strong>Senders</strong>: the default address, or a custom domain. Senders set the from-address. <a href="#/email/delivery">Delivery</a> sets which service sends it.</li>
 </ul>
 
 <h2>System emails</h2>
