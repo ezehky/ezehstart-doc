@@ -1,5 +1,5 @@
 <h1>Installation</h1>
-<p class="lead">From clone to a signed-in admin in a few minutes.</p>
+<p class="lead">From <code>laravel new</code> to a signed-in admin in a few minutes.</p>
 
 <h2>Requirements</h2>
 <ul>
@@ -9,6 +9,14 @@
   <li>A database. The example environment uses <strong>SQLite</strong>, so nothing needs to be running to get started</li>
   <li><em>Optional:</em> <code>jpegoptim</code>, <code>optipng</code> and <code>pngquant</code> for image optimisation. Uploads still work without them, just unoptimised</li>
 </ul>
+
+<h2>Create the project</h2>
+<pre><code>laravel new app-name --using=ezehky/ezehstart
+cd app-name</code></pre>
+<p>
+  The Laravel installer pulls the kit from Packagist into a new <code>app-name</code> folder.
+  Replace <code>app-name</code> with your project's name.
+</p>
 
 <h2>Set up</h2>
 <pre><code>composer setup</code></pre>
