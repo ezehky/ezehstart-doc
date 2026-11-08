@@ -14,6 +14,7 @@
     <tr><td><code>GITHUB_CLIENT_ID</code> / <code>_SECRET</code></td><td>GitHub sign-in</td></tr>
     <tr><td><code>TURNSTILE_SITE_KEY</code> / <code>TURNSTILE_SECRET_KEY</code></td><td>Cloudflare Turnstile captcha. The captcha switch has no effect until <strong>both</strong> are set</td></tr>
     <tr><td><code>RESEND_API_KEY</code> / <code>BREVO_API_KEY</code></td><td>Email through Resend or Brevo, once picked on <a href="#/email/delivery">Email delivery</a>. SMTP uses the standard <code>MAIL_*</code> keys</td></tr>
+    <tr><td><code>APP_REPOSITORY_URL</code> / <code>APP_DOCUMENTATION_URL</code></td><td>Where the GitHub and docs links in the public header, the footer and the dashboard sidebar point. They default to the kit's repository and these docs. Set your own, or set one empty to remove its links</td></tr>
     <tr><td><code>LARAVEL_PDF_DRIVER</code></td><td><code>dompdf</code> by default, which needs nothing installed. Other laravel-pdf drivers need their own packages</td></tr>
   </tbody>
 </table>

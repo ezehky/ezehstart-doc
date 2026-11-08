@@ -23,8 +23,15 @@
 <h2>Marketing</h2>
 <p>Campaigns, the campaign builder, templates, saved sections, sent history, and settings. See <a href="#/email">Email and newsletter</a>.</p>
 
-<h2>Money</h2>
-<p>The transaction ledger, its review queue, manual adjustments, refunds and "check with provider". <strong>Payments</strong> (gate <code>payments</code>) shows webhooks, traces and which vendors are configured. <strong>Subscriptions</strong> (gate <code>subscriptions</code>) manages plans, prices, features and subscribers. See <a href="#/payments">Payments and subscriptions</a>.</p>
+<h2>Finance</h2>
+<p>Four screens under one sidebar group. A role holding <code>finance</code> reaches all four.</p>
+<ul>
+  <li><strong>Transactions</strong> (gate <code>finance.transactions</code>): the ledger, its review queue, manual adjustments, refunds and "check with provider".</li>
+  <li><strong>Payments</strong> (gate <code>finance.payments</code>): webhooks, traces, which vendors are configured, and each vendor's fee.</li>
+  <li><strong>Subscriptions</strong> (gate <code>finance.subscriptions</code>): plans, prices, features and subscribers.</li>
+  <li><strong>Subaccounts</strong> (gate <code>finance.subaccounts</code>): the payees a checkout can be split with.</li>
+</ul>
+<p>See <a href="#/payments">Payments and subscriptions</a>.</p>
 
 <h2>Site configuration</h2>
 <p>Info, Security, Preferences, social handles, contact locations, currencies, email senders, notification types, a log viewer that reads the tail of the application log, and a raw JSON editor.</p>

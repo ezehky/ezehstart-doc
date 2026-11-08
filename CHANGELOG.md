@@ -3,6 +3,30 @@
 All notable changes to the Ezeh Start documentation site. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.3.0] - 2026-11-08
+
+Brings the docs up to kit 2.5.0.
+
+### Added
+
+- **Payments and subscriptions**: a **Split payments** section covering subaccounts on
+  Paystack, Flutterwave and Monnify, the Finance › Subaccounts screen, splitting a checkout
+  with `subaccount:`, what `checkout()` refuses, and `checkoutOptionsFor()`. There's a
+  split-payments column in the vendor table, and `SupportsSubaccounts` under "Adding a
+  vendor".
+- **Releases and upgrading**: 2.5.0 in the history, with its upgrade steps. These include
+  the snippet that moves stored gate keys to `finance.*`.
+- **Configuration**: `APP_REPOSITORY_URL` and `APP_DOCUMENTATION_URL`.
+- A GitHub link in the docs header and footer.
+
+### Changed
+
+- **The admin workspace**: "Money" is now **Finance**, with all four screens and their
+  `finance.*` gates.
+- **Payments and subscriptions**: refunds start from Finance › Transactions, and "Going
+  live" grants the `finance.*` gates.
+- **Introduction**: the payments row mentions split payments.
+
 ## [2.2.0] - 2026-11-02
 
 Brings the docs up to kit 2.4.0. It also records the kit 2.2.1 and 2.3.0 updates, which

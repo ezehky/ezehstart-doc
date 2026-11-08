@@ -1,5 +1,5 @@
 <h1>Payments and subscriptions</h1>
-<p class="lead">Gateway checkouts, refunds and vendor-billed subscriptions for eight providers, all written through the ledger and settled only once the vendor confirms them.</p>
+<p class="lead">Gateway checkouts, refunds, split payments and vendor-billed subscriptions for eight providers, all written through the ledger and settled only once the vendor confirms them.</p>
 
 <h2>Vendors</h2>
 <p>
@@ -8,10 +8,12 @@
   once every key it needs is set in the environment.
 </p>
 <table>
-  <thead><tr><th>Vendor</th><th>Payments and refunds</th><th>Subscriptions</th></tr></thead>
+  <thead><tr><th>Vendor</th><th>Payments and refunds</th><th>Subscriptions</th><th>Split payments</th></tr></thead>
   <tbody>
-    <tr><td>Paystack, Flutterwave, Stripe, PayPal</td><td>Yes</td><td>Yes</td></tr>
-    <tr><td>OPay, Monnify, Korapay, Bachs</td><td>Yes</td><td>No, so they're never offered for a plan</td></tr>
+    <tr><td>Paystack, Flutterwave</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+    <tr><td>Stripe, PayPal</td><td>Yes</td><td>Yes</td><td>No</td></tr>
+    <tr><td>Monnify</td><td>Yes</td><td>No</td><td>Yes</td></tr>
+    <tr><td>OPay, Korapay, Bachs</td><td>Yes</td><td>No</td><td>No</td></tr>
   </tbody>
 </table>
 <p>
@@ -117,11 +119,73 @@ public function handle(PaymentSucceeded $event): void
   page's <code>#[Computed]</code> and show it next to the total. Don't work the fee out anywhere else.
 </p>
 
+<h2>Split payments</h2>
+<p>
+  A checkout can be split with a <strong>subaccount</strong>: a payee with a bank account of its
+  own. The vendor pays the payee's share straight into that account and the rest to the site, so
+  the payee's money never passes through your balance. Paystack, Flutterwave and Monnify can do
+  this. The other vendors are never offered where a payment is split.
+</p>
+<h3>Creating a subaccount</h3>
+<p>
+  Administrators create them on <strong>Finance → Subaccounts</strong> (gate
+  <code>finance.subaccounts</code>). A subaccount has a business name, the bank account the payee
+  is paid into, and the share the <strong>site keeps</strong> (<code>platform_percentage</code>).
+  The payee gets the rest. The vendor's own fee comes out of the site's share.
+</p>
+<ul>
+  <li><strong>The vendor answers first.</strong> <code>PaymentSubaccountService::save()</code> creates the subaccount on the vendor and saves the row only once the vendor accepts it. The vendor names the account holder, so a wrong account number shows up before any money moves.</li>
+  <li><strong>One row per vendor.</strong> Each vendor has its own bank codes, so a payee paid through Paystack and Monnify is two rows. A subaccount never moves vendor. The bank list comes from the vendor and is cached for a day.</li>
+  <li><strong>Switching off</strong> stops checkouts naming it. Paystack is told. Flutterwave and Monnify have no switch, so the change stays on this site.</li>
+  <li><strong>Deleting</strong> is only possible while no checkout has been split with it, and only removes this site's row. The vendor's copy stays.</li>
+  <li>Every write is logged, and each subaccount call shows up in the payment traces.</li>
+</ul>
+<p>
+  The screen has its own gate on purpose. It decides who gets paid and into which bank account,
+  so not every role that reads payments should be able to change it.
+</p>
+<h3>Splitting a checkout</h3>
+<p>The kit ties a subaccount to nothing. Point your own model at it (a <code>payment_subaccount_id</code> on a store, say) and pass it to <code>checkout()</code>:</p>
+<pre><code>$result = app(PaymentService::class)-&gt;checkout(
+    $user,
+    PaymentVendorEnum::from($this-&gt;vendor),
+    $order-&gt;total,
+    "Order {$order-&gt;number}",
+    TransactionGroupEnum::PURCHASE,
+    TransactionTypeEnum::DIRECT,
+    TransactionWalletEnum::NONE,
+    against: $order,
+    subaccount: $order-&gt;store-&gt;paystackSubaccount,
+);</code></pre>
+<p>Before any row is written, <code>checkout()</code> refuses:</p>
+<ul>
+  <li>a vendor that can't split</li>
+  <li>a vendor other than the subaccount's own</li>
+  <li>a switched-off subaccount</li>
+  <li>a subaccount in a currency other than the ledger's</li>
+  <li>a <strong>wallet deposit</strong>, because the balance would hold money the site never received</li>
+</ul>
+<p>
+  The gateway row keeps <code>payment_subaccount_id</code>, so a receipt or a dispute can say who
+  was paid.
+</p>
+<div class="callout">
+  <p><strong>Offer only the vendors that can take the split.</strong> On a screen that pays one
+  payee, list <code>app(PaymentSubaccountService::class)-&gt;checkoutOptionsFor($payee-&gt;subaccounts)</code>:
+  available, able to split, and holding an active subaccount of that payee's. Never offer
+  <code>checkoutOptions()</code> where a payment is split.</p>
+</div>
+<p>
+  Subscriptions are never split. A refund of a split payment is the vendor's ordinary refund, and
+  each vendor has its own rule for getting the payee's share back. Read it before refunding
+  marketplace sales.
+</p>
+
 <h2>Refunds</h2>
 <p>
   A refund is <strong>its own <code>REFUND</code> row</strong> pointing at the payment. The payment
   isn't edited. It stays <code>CONFIRMED</code>, because it happened. Admins refund from the
-  <strong>Transactions</strong> screen, which also has "check with provider".
+  <strong>Finance → Transactions</strong> screen, which also has "check with provider".
 </p>
 <ul>
   <li><strong>Partial or full.</strong> What's left to refund is the payment minus every refund that's <code>CONFIRMED</code> or <code>PROCESSING</code>. A failed refund frees its amount again.</li>
@@ -188,14 +252,14 @@ app(SubscriptionService::class)->limitFor($user, SubscriptionFeatureEnum::PROJEC
   <li>Register <code>https://your-site/webhooks/payments/{vendor}</code> as the webhook URL in each vendor's dashboard. <code>webhooks/*</code> is already exempt from CSRF.</li>
   <li>Bachs needs <code>BACHS_WEBHOOK_SECRET</code> in production: the endpoint's signing secret from the Bachs Developer Portal. Its key picks the host. An <code>sk_live_</code> key goes to the live API, anything else to the sandbox.</li>
   <li>Run a queue worker. Webhooks are processed on the queue, and the reconcile sweep is only a safety net.</li>
-  <li>Grant the <code>payments</code> and <code>subscriptions</code> gates to the roles that should see those screens.</li>
+  <li>Grant the <code>finance.*</code> gates to the roles that should see the money screens. <code>finance</code> on its own covers all four. Grant <code>finance.subaccounts</code> separately and on purpose.</li>
 </ul>
 
 <h2>Adding a vendor</h2>
 <ol>
   <li>A case in <code>PaymentVendorEnum</code>, with its <code>label()</code> and <code>gateway()</code> arms.</li>
   <li>A block under <code>payments.vendors</code> in <code>config/payments.php</code>, and the keys in <code>.env.example</code>.</li>
-  <li><code>app/Services/Payment/Gateways/{Vendor}GatewayService.php</code>, extending <code>BasePaymentGateway</code>. It implements <code>initialize()</code>, <code>verify()</code>, <code>verifyWebhook()</code>, <code>parseWebhook()</code> and <code>ping()</code>. A vendor that bills subscriptions also implements <code>SupportsSubscriptions</code>, including <code>resumeSubscription()</code>. If the vendor can't resume, that method returns a sentence saying so.</li>
+  <li><code>app/Services/Payment/Gateways/{Vendor}GatewayService.php</code>, extending <code>BasePaymentGateway</code>. It implements <code>initialize()</code>, <code>verify()</code>, <code>verifyWebhook()</code>, <code>parseWebhook()</code> and <code>ping()</code>. A vendor that bills subscriptions also implements <code>SupportsSubscriptions</code>, including <code>resumeSubscription()</code>. If the vendor can't resume, that method returns a sentence saying so. A vendor that can split payments also implements <code>SupportsSubaccounts</code> (<code>banks()</code>, <code>createSubaccount()</code>, <code>updateSubaccount()</code>, <code>splitFields()</code>) and spreads <code>$this-&gt;splitFor($transaction)</code> into its <code>initialize()</code> call. <code>PaymentVendorEnum::supportsSubaccounts()</code> reads the interface, so nothing else needs to change.</li>
   <li>Tests: a signature test using the vendor's real scheme, and a checkout-and-verify test with <code>Http::fake()</code>.</li>
 </ol>
 <p>The full contract is in <code>.agents/my-skills/payments.md</code> in the kit.</p>

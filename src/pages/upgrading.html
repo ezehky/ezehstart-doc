@@ -16,6 +16,7 @@
 <table>
   <thead><tr><th>Version</th><th>Date</th><th>Highlights</th></tr></thead>
   <tbody>
+    <tr><td>2.5.0</td><td>2026-11-08</td><td>Split payments through subaccounts on Paystack, Flutterwave and Monnify, the money screens grouped under Finance with <code>finance.*</code> gates, GitHub and docs links in the header, footer and dashboard</td></tr>
     <tr><td>2.4.0</td><td>2026-11-02</td><td>Email delivery through Resend, Brevo or SMTP, the Bachs gateway, a separate fee for cards from abroad, resuming a cancelled subscription, emailing members about a new policy, states and regions</td></tr>
     <tr><td>2.3.0</td><td>2026-10-30</td><td>Public pages on controllers, policies and FAQs in the rich-text editor, per-vendor processing fees, folder import for the image library, the <code>brand-*</code> palette</td></tr>
     <tr><td>2.2.1</td><td>2026-10-20</td><td>A <code>payments</code> log channel; public links load full pages instead of using <code>wire:navigate</code></td></tr>
@@ -28,6 +29,59 @@
   </tbody>
 </table>
 <p>If you're starting a project from the current kit, there's nothing to do. The sections below are for a project built on an earlier version.</p>
+
+<h2>Upgrading to 2.5.0</h2>
+<p>Run the migrations. They add the <code>payment_subaccounts</code> table and a <code>payment_subaccount_id</code> column on <code>transaction_gateways</code>:</p>
+<pre><code>php artisan migrate</code></pre>
+<p>
+  The kit adds the column by editing its create migration. A project made from the kit needs its
+  own <code>add_*</code> migration for it, dated after the <code>payment_subaccounts</code> one:
+</p>
+<pre><code>Schema::table('transaction_gateways', function (Blueprint $table) {
+    $table-&gt;foreignId('payment_subaccount_id')-&gt;nullable()-&gt;after('vendor')
+        -&gt;constrained()-&gt;nullOnDelete();
+});</code></pre>
+<div class="callout warn">
+  <p><strong>Move the stored gate keys, or every role loses the money screens.</strong> That
+  includes the seeded Administrator role. Transactions, Payments and Subscriptions now sit under
+  <strong>Finance</strong>, and their gates moved from <code>transactions</code>,
+  <code>payments</code> and <code>subscriptions</code> to <code>finance.transactions</code>,
+  <code>finance.payments</code> and <code>finance.subscriptions</code>. Roles and admin overrides
+  keep their gates in the database, so run this once in <code>php artisan tinker</code> or a
+  one-off migration:</p>
+</div>
+<pre><code>use App\Models\Role;
+use App\Models\User;
+use App\Services\RoleService;
+
+$moved = ['transactions', 'payments', 'subscriptions'];
+
+foreach ([Role::query(), User::query()] as $query) {
+    $query-&gt;whereNotNull('gates')-&gt;each(function ($row) use ($moved) {
+        $gates = $row-&gt;gatesArray();
+
+        foreach ($moved as $key) {
+            if (array_key_exists($key, $gates)) {
+                $gates["finance.{$key}"] ??= $gates[$key];
+                unset($gates[$key]);
+            }
+        }
+
+        $row-&gt;gates = $gates;
+        $row-&gt;saveQuietly();
+    });
+}
+
+<span class="c">// The Administrator role is meant to reach everything, Subaccounts included.</span>
+$administrator = app(RoleService::class)-&gt;protectedRole();
+$administrator-&gt;gates = [...$administrator-&gt;gatesArray(), 'finance.subaccounts' =&gt; 'full'];
+$administrator-&gt;saveQuietly();</code></pre>
+<ul>
+  <li>Each role keeps its level, and a denial in an admin's override stays a denial. No other role is given Subaccounts. Grant it on <strong>Roles</strong> on purpose.</li>
+  <li>Search your own code for the old keys (<code>kGate('transactions'</code>, <code>setPageGate('payments'</code>, <code>kSetSiteTitle('subscriptions')</code>) and add the <code>finance.</code> prefix. A title takes the group first: <code>kSetSiteTitle('finance', 'payments')</code>.</li>
+  <li>Add <code>APP_REPOSITORY_URL</code> and <code>APP_DOCUMENTATION_URL</code> to <code>.env</code>, each either your own or empty to remove its links. Left unset, they point at the kit's repository and these docs.</li>
+  <li>If the config is cached, rebuild it with <code>php artisan config:cache</code>.</li>
+</ul>
 
 <h2>Upgrading to 2.4.0</h2>
 <p>Run the new migration and seed the regions:</p>
