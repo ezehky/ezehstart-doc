@@ -20,3 +20,21 @@ php artisan lang:translate fr <span class="c"># machine-translate into lang/fr.j
   <code>stichoza/google-translate-php</code>, a <strong>development-only</strong> dependency.
   Never call it at runtime.
 </p>
+
+<h2>Translate this page</h2>
+<p>
+  A second, separate tool: <code>&lt;livewire:livewire.page-translator&gt;</code> in the public
+  header puts Google's website translator behind the site's own menu. It machine-translates
+  whatever is on screen in the visitor's browser, posts and pages included, which no
+  <code>lang/{code}.json</code> file can reach. It never changes the server's locale, and the
+  language switcher above carries on serving the reviewed files.
+</p>
+<ul>
+  <li><strong>Off by default</strong> (<code>translator.status</code>). Turn it on under <strong>Configuration › Preferences › Translate this page</strong>.</li>
+  <li>The same card picks the languages offered, by name. French, Spanish, Portuguese, German and Arabic are there to start. Names and flags come from <code>database/data/translator-languages.json</code> (61 languages), so nobody has to know that Yorùbá is <code>yo</code>. <code>PageTranslatorService</code> reads it, and a code no longer in the file is dropped from the menu.</li>
+  <li>Google's script loads only once a visitor picks a language. The choice is kept in Google's <code>googtrans</code> cookie, so it follows the visitor from page to page.</li>
+  <li>Google's own banner, tooltip and highlight are hidden in <code>app.css</code>. The site's menu replaces them.</li>
+</ul>
+<div class="callout warn">
+  <p><strong>If you turn it on, say so in your policies.</strong> The menu loads a script from <code>translate.google.com</code> and sets the <code>googtrans</code> cookie. Mention both in your cookie and privacy policies.</p>
+</div>

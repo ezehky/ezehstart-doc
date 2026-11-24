@@ -3,6 +3,34 @@
 All notable changes to the Ezeh Start documentation site. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.4.0] - 2026-11-25
+
+Brings the docs up to kit 2.6.0.
+
+### Added
+
+- **Configuration**: a **Brand colour** section covering the presets, how
+  `BrandColorService` derives and prints the shades, `kBrandColor()`, and the
+  `config.brand-colors` gate. The screens table gains Brand colour, and the defaults table
+  gains the translate menu (off) and WebP conversion (on).
+- **Languages**: a **Translate this page** section. It explains how the menu differs from
+  the language switcher, where its languages come from, and the Google script and cookie
+  it brings.
+- **Image and video libraries**: cropping in place, WebP conversion with the Outlook
+  warning, and `Image::previewUrl()`.
+- **Authentication**: email addresses are stored in lower case and looked up through
+  `User::normalizeEmail()`.
+- **Releases and upgrading**: 2.6.0 in the history, with its upgrade steps, including
+  the snippets that find case collisions and lower-case stored addresses.
+- **Going to production**: pick the brand colour.
+
+### Changed
+
+- **Image and video libraries**: a member's library holds only their own uploads, and
+  per-item visibility now decides only what a signed-out visitor sees.
+- **House style**: the `brand-*` rule says never to hard-code the hex.
+- **Introduction**: the media row mentions cropping and WebP.
+
 ## [2.3.0] - 2026-11-08
 
 Brings the docs up to kit 2.5.0.

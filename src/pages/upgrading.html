@@ -16,6 +16,7 @@
 <table>
   <thead><tr><th>Version</th><th>Date</th><th>Highlights</th></tr></thead>
   <tbody>
+    <tr><td>2.6.0</td><td>2026-11-25</td><td>A brand colour picked from the dashboard, an optional Translate this page menu, cropping and WebP conversion in the image library, members' libraries limited to their own uploads, email addresses stored in lower case</td></tr>
     <tr><td>2.5.0</td><td>2026-11-08</td><td>Split payments through subaccounts on Paystack, Flutterwave and Monnify, the money screens grouped under Finance with <code>finance.*</code> gates, GitHub and docs links in the header, footer and dashboard</td></tr>
     <tr><td>2.4.0</td><td>2026-11-02</td><td>Email delivery through Resend, Brevo or SMTP, the Bachs gateway, a separate fee for cards from abroad, resuming a cancelled subscription, emailing members about a new policy, states and regions</td></tr>
     <tr><td>2.3.0</td><td>2026-10-30</td><td>Public pages on controllers, policies and FAQs in the rich-text editor, per-vendor processing fees, folder import for the image library, the <code>brand-*</code> palette</td></tr>
@@ -29,6 +30,36 @@
   </tbody>
 </table>
 <p>If you're starting a project from the current kit, there's nothing to do. The sections below are for a project built on an earlier version.</p>
+
+<h2>Upgrading to 2.6.0</h2>
+<p>There are no migrations and no renames. Install the dependencies and rebuild the assets, since there are two new JS modules and new CSS:</p>
+<pre><code>composer install
+npm install &amp;&amp; npm run build</code></pre>
+<div class="callout warn">
+  <p><strong>Lower-case the stored email addresses, or some accounts can't sign in.</strong>
+  Every lookup now normalises the typed address, so a row still stored as
+  <code>John@Example.com</code> isn't found on SQLite or PostgreSQL. Two rows that differ only
+  by case would collide on the unique index, so look for those first in
+  <code>php artisan tinker</code>:</p>
+</div>
+<pre><code>use App\Models\User;
+use Illuminate\Support\Facades\DB;
+
+DB::table('users')-&gt;whereNotNull('email')-&gt;get(['id', 'email'])
+    -&gt;groupBy(fn ($row) =&gt; User::normalizeEmail($row-&gt;email))
+    -&gt;filter(fn ($rows) =&gt; $rows-&gt;count() &gt; 1);</code></pre>
+<p>Merge or rename any it finds, then lower-case the rest:</p>
+<pre><code>DB::table('users')-&gt;whereNotNull('email')-&gt;orderBy('id')-&gt;each(
+    fn ($row) =&gt; DB::table('users')-&gt;where('id', $row-&gt;id)
+        -&gt;update(['email' =&gt; User::normalizeEmail($row-&gt;email)])
+);</code></pre>
+<ul>
+  <li><code>DB::table()</code> is on purpose: it reaches soft-deleted rows and fires no model events. MySQL's default collation already ignores case, but run it there too so the stored shape is the same everywhere.</li>
+  <li><strong>Members no longer see site media.</strong> A member's library and pickers now hold only what that member uploaded. If your project shared images or videos with members by marking them public or by account type, that has stopped. Offer that media another way, or bring back the old <code>visibleTo</code> and <code>browsableBy</code> scopes from the 2.5.0 tag in your own copy.</li>
+  <li><strong>Check WebP before going live.</strong> New JPEG and PNG uploads are saved as WebP, and existing files aren't touched. Desktop Outlook can't show WebP, so if library images go out in email, turn off <strong>Convert photos to WebP</strong> under Configuration › Security. <code>php -r "var_dump(function_exists('imagewebp'));"</code> tells you whether the server can convert at all.</li>
+  <li><strong>The brand colour needs nothing.</strong> The default is the teal the kit was built with, and nothing is printed for it. If your own email views hard-code <code>#2DD4B5</code>, use <code>kBrandColor()</code> so they follow the setting. A role holding <code>config</code> reaches the new screen. A role holding only some <code>config.*</code> children needs <code>config.brand-colors</code> granted on <strong>Roles</strong>.</li>
+  <li><strong>The Translate this page menu is off.</strong> If you turn it on, mention Google's translator and its <code>googtrans</code> cookie in your cookie and privacy policies.</li>
+</ul>
 
 <h2>Upgrading to 2.5.0</h2>
 <p>Run the migrations. They add the <code>payment_subaccounts</code> table and a <code>payment_subaccount_id</code> column on <code>transaction_gateways</code>:</p>

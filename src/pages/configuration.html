@@ -34,8 +34,9 @@
   <thead><tr><th>Screen</th><th>Holds</th></tr></thead>
   <tbody>
     <tr><td>Info</td><td>Site name, branding, logo, support contacts</td></tr>
-    <tr><td>Security</td><td>Sign-in switches, password policy, captcha, passkeys, activity-log retention</td></tr>
-    <tr><td>Preferences</td><td>Newsletter placements, cookie notice, mobile floating menu, account deletion window, data download</td></tr>
+    <tr><td>Security</td><td>Sign-in switches, password policy, captcha, passkeys, upload limits and WebP conversion, activity-log retention</td></tr>
+    <tr><td>Preferences</td><td>Newsletter placements, cookie notice, the <a href="#/languages/translate-this-page">Translate this page</a> menu and its languages, mobile floating menu, account deletion window, data download</td></tr>
+    <tr><td>Brand colour</td><td>The site's accent: one of six presets (teal, sky, indigo, violet, rose, amber) or any hex. See <a href="#/configuration/brand-colour">Brand colour</a> below</td></tr>
     <tr><td>Contact locations</td><td>Offices, branches or desks for the home page's contact section: a label, an address, any number of phones and emails, and an optional map. A map must be a Google Maps or OpenStreetMap embed. You can paste the whole <code>&lt;iframe&gt;</code> or just its <code>src</code>. An empty list hides the section</td></tr>
     <tr><td>Email delivery</td><td>Which service sends the site's email: the log, Resend, Brevo or SMTP. Keys stay in <code>.env</code>. See <a href="#/email/delivery">Email</a></td></tr>
     <tr><td>Social handles, currencies, email senders, notification types, logs</td><td>One screen each</td></tr>
@@ -57,6 +58,27 @@ kSiteFlag('group', 'key', $default);     <span class="c">// an on/off switch</sp
   <code>app(SiteConfigurationService::class)->getConfigs(raw: true)</code>.
 </p>
 
+<h3>Brand colour</h3>
+<p>
+  One build serves every project made from the kit. <code>BrandColorService</code> takes the one
+  colour picked, places it on <code>brand-400</code>, derives the other ten shades around it in
+  OKLCH, and the base layout prints them as CSS variables after the compiled stylesheet. Every
+  <code>brand-*</code> utility, Flux's accent and the email builder's <strong>brand</strong>
+  swatch follow it. Nothing is rebuilt.
+</p>
+<ul>
+  <li>For the teal <code>app.css</code> was compiled with, nothing is printed.</li>
+  <li>Button text is worked out per colour: white where it reaches 3:1, dark otherwise. The preview warns when it falls below 4.5:1.</li>
+  <li>The setting lives in <code>brand.palette</code> and <code>brand.primary</code>. A preset's hex comes from <code>BrandPaletteEnum</code>, so <code>primary</code> only matters for <strong>Custom</strong>.</li>
+  <li>The gate is <code>config.brand-colors</code>. It inherits <code>config</code>.</li>
+</ul>
+<pre><code>kBrandColor();      <span class="c">// the 400 shade as a hex, for email</span>
+kBrandColor(700);   <span class="c">// any shade, 50 to 950</span></code></pre>
+<p>
+  On a page, use <code>brand-*</code> classes. They follow the setting already. Reach for
+  <code>kBrandColor()</code> only where a CSS variable can't, which mostly means email.
+</p>
+
 <h2>Defaults worth knowing</h2>
 <table>
   <thead><tr><th>Switch</th><th>Default</th></tr></thead>
@@ -67,6 +89,8 @@ kSiteFlag('group', 'key', $default);     <span class="c">// an on/off switch</sp
     <tr><td>Auto-delete unverified accounts (warn on day 2, delete on day 3)</td><td>On</td></tr>
     <tr><td>"We missed you" reminder (after 30 days)</td><td>On</td></tr>
     <tr><td>Mobile floating menu</td><td>Off</td></tr>
+    <tr><td>Translate this page menu</td><td>Off</td></tr>
+    <tr><td>Convert photos to WebP</td><td>On</td></tr>
     <tr><td>Activity-log retention</td><td>Off (0 days, which keeps everything)</td></tr>
   </tbody>
 </table>

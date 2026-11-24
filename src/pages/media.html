@@ -4,10 +4,10 @@
 <h2>What both share</h2>
 <ul>
   <li><strong>Folders</strong>: a folder tree per library.</li>
-  <li><strong>Visibility per item</strong> (<code>MediaVisibilityEnum</code>): <code>private</code>, <code>role</code>, or <code>public</code>.</li>
+  <li><strong>Visibility per item</strong> (<code>MediaVisibilityEnum</code>): <code>private</code>, <code>role</code>, or <code>public</code>. It decides what a <strong>signed-out</strong> visitor can see. It doesn't open anything to members.</li>
   <li><strong>A delete guard</strong> backed by a usage table (<code>image_usages</code>, <code>video_usages</code>) with a restricting foreign key. An item in use on a published post refuses to be deleted, so the post never ends up with a broken picture.</li>
   <li><strong>Pickers</strong>: <code>&lt;x-form.image-slot&gt;</code> and <code>&lt;x-form.video-slot&gt;</code>.</li>
-  <li>Available in <strong>both workspaces</strong>. A member's uploads are private to them and don't appear in the admin library. Admins reach them only from the account page.</li>
+  <li>Available in <strong>both workspaces</strong>. <strong>A member's library holds only what that member uploaded</strong>, in the grid and in every picker, however the site's own media is marked. <code>isVisibleTo()</code> applies the same rule, so an id sent by hand gets no further. A member's uploads don't appear in the admin library either. Admins reach them only from the account page.</li>
   <li>When someone at the site changes something in a member's library, <code>UploadModifiedEmail</code> tells the member.</li>
 </ul>
 
@@ -16,9 +16,15 @@
   <li>Upload several images at once, and search by name.</li>
   <li><strong>Rename without changing the URL</strong>: the title changes, but the stored path doesn't.</li>
   <li>Members have a configurable quota. Administrators don't.</li>
+  <li><strong>Crop in place.</strong> Select one JPEG, PNG or WebP image and open <strong>Crop</strong>. The file is cut and written back over itself, so its URL doesn't change and every post already using it shows the cropped version. GIF (animation) and SVG (no pixels) are refused. <code>ImageLibraryService::canCrop()</code> and <code>crop()</code> do the work, and the library's tiles use <code>Image::previewUrl()</code>, which adds <code>?v={updated_at}</code> so the crop shows straight away. Posts keep the plain <code>url()</code>.</li>
+  <li><strong>WebP on the way in.</strong> With <strong>Convert photos to WebP</strong> on (Configuration › Security, <code>uploads.convert-to-webp</code>, on by default), JPEG and PNG uploads are re-encoded at quality 80 and scaled to 2560px on the longest side. GIF and SVG are kept as they are. A conversion that comes out larger, or fails, keeps the original, so an upload never fails here. It needs GD built with WebP.</li>
   <li>Uploads are optimised with <code>spatie/laravel-image-optimizer</code> when <code>jpegoptim</code>, <code>optipng</code> and <code>pngquant</code> are installed. Without them, uploads still work, just unoptimised.</li>
   <li>A folder you've just made opens straight away, in both libraries, since the next upload is usually headed there.</li>
 </ul>
+
+<div class="callout warn">
+  <p><strong>Desktop Outlook can't show WebP.</strong> If library images go out in email, turn the conversion off. Files already stored aren't touched either way.</p>
+</div>
 
 <h3>Folder import</h3>
 <p>

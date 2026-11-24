@@ -33,6 +33,7 @@
 
 <h2>Hardening</h2>
 <ul>
+  <li><strong>Email addresses are stored trimmed and in lower case.</strong> A setter on <code>User::email</code> does it on every write, and every lookup by a typed address goes through <code>User::normalizeEmail()</code>, so <code>John@</code> and <code>john@</code> are one account even on SQLite or PostgreSQL, which compare text case-sensitively. A screen using <code>WithAuthWorker</code> normalises its <code>email</code> property as soon as it's typed.</li>
   <li><strong>Login throttle</strong>, keyed on the email <em>and</em> the IP address together, so nobody can lock out an address just by knowing it.</li>
   <li><strong>Password strength</strong> is configurable, and <strong>password history</strong> refuses a password this account has already used.</li>
   <li><strong>Captcha</strong>: Cloudflare Turnstile on each guest form rather than across the whole site. The widget and its validation rule are always added together by <code>captchaRules()</code>. The captcha stays off, whatever the switch says, until both Turnstile keys are set.</li>
