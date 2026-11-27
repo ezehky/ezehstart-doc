@@ -1,0 +1,80 @@
+<h1>Search engines and analytics</h1>
+<p class="lead">What the site tells crawlers about itself, how Google Analytics is switched on, and the cookie banner that decides whether it loads.</p>
+
+<h2>robots.txt and the sitemap</h2>
+<p>
+  <code>/robots.txt</code> (<code>robots</code>) and <code>/sitemap.xml</code> (<code>sitemap</code>)
+  are written by the app, in <code>SearchEngineService</code>, not kept in <code>public/</code>. A
+  crawler wants the sitemap's full address, and a static file can't know which domain it's served
+  from, so the same build works on staging and live.
+</p>
+<ul>
+  <li><strong>robots.txt allows everything</strong> and points at the sitemap. It never names a workspace: a <code>Disallow</code> line is a public list of the paths a site would rather nobody looked at.</li>
+  <li><strong>The workspaces say noindex instead.</strong> <code>NoIndexMiddleware</code> on both workspace groups sends <code>X-Robots-Tag: noindex, nofollow</code>, and they sit behind a sign-in anyway.</li>
+  <li><strong>The sitemap lists</strong> the home page, the blog index, every live post (with its <code>lastmod</code>) and the legal pages. Nothing drafted, scheduled or private appears. The list is cached for an hour under <code>sitemap.urls</code>.</li>
+</ul>
+<div class="callout warn">
+  <p><strong>A <code>public/robots.txt</code> wins.</strong> The web server serves a static file
+  before the request reaches Laravel, so delete any you added.</p>
+</div>
+
+<h2>Structured data</h2>
+<p>
+  <code>StructuredDataService</code> builds schema.org JSON-LD, and
+  <code>&lt;x-site.structured-data&gt;</code> prints it in the page head.
+</p>
+<table>
+  <thead><tr><th>Page</th><th>Type</th><th>Carries</th></tr></thead>
+  <tbody>
+    <tr><td>Home</td><td><code>Organization</code></td><td>The site name and address, the social handles as <code>sameAs</code>, and the logo once one is uploaded</td></tr>
+    <tr><td>A blog post</td><td><code>BlogPosting</code></td><td>Headline and description (from the post's SEO fields), image, published and modified dates, author, tags as keywords, and the site as publisher</td></tr>
+  </tbody>
+</table>
+
+<h2>Blog feed</h2>
+<p>
+  <code>/blog/feed</code> (<code>blog.feed</code>) is RSS 2.0 of the latest twenty live posts:
+  title, excerpt, author, categories and image, each linking to the post page. The body is never
+  in the feed. The public layouts advertise it with a <code>&lt;link rel="alternate"&gt;</code>, so
+  feed readers find it from any page.
+</p>
+
+<h2>Google Analytics</h2>
+<p>
+  Paste a GA4 measurement ID (<code>G-…</code>) under <strong>Configuration › Site info</strong>. It's
+  stored as <code>analytics.ga4-id</code> in the site configuration, not <code>.env</code>, because
+  it's a public identifier printed in every page that loads the tag, not a secret.
+  <code>AnalyticsService</code> and <code>&lt;x-site.analytics&gt;</code> do the rest.
+</p>
+<ul>
+  <li><strong>Public pages only.</strong> Neither workspace loads the tag, and neither does a session an administrator is <a href="#/impersonation">impersonating</a>: their clicks aren't a visitor's.</li>
+  <li><strong>Page views only.</strong> Nothing about the visitor or their account is sent.</li>
+  <li><strong>Only after consent.</strong> Until the visitor allows measurement, the tag waits in the browser and doesn't load.</li>
+  <li>An ID that isn't the <code>G-</code> shape is ignored, as if none were set.</li>
+</ul>
+
+<h2>The cookie banner</h2>
+<p>
+  <code>preferences.accept-cookies</code> (on by default) shows the banner, a card in the bottom
+  corner. It takes one of two shapes, decided by whether there's anything optional to allow:
+</p>
+<table>
+  <thead><tr><th>Analytics ID</th><th>Shape</th><th>Answers</th></tr></thead>
+  <tbody>
+    <tr><td>Not set</td><td>A <strong>notice</strong>. The site sets only session and CSRF cookies, which a notice covers</td><td><strong>Got it</strong></td></tr>
+    <tr><td>Set</td><td>A <strong>choice</strong>. Nothing optional loads until it's made</td><td><strong>Accept all</strong>, <strong>Reject optional</strong>, or <strong>Manage preferences</strong> for a switch per category</td></tr>
+  </tbody>
+</table>
+<ul>
+  <li><strong>Categories</strong> are <code>CookieCategoryEnum</code> cases: <code>necessary</code> (always on) and <code>measurement</code>. Add a case when you add another kind of optional cookie.</li>
+  <li><strong>The answer is one plain cookie</strong>, <code>site_consent</code>, holding something like <code>v1:necessary,measurement</code> for 180 days. It's left out of cookie encryption in <code>bootstrap/app.php</code> because the browser writes it. <code>CookieConsentService::granted()</code> reads it on the server.</li>
+  <li><strong>The site never assumes a yes.</strong> No answer, an old version, or the banner switched off all read as necessary only. <strong>Turning the banner off means analytics never loads.</strong></li>
+  <li><strong>Cookie settings</strong> appears in the footer once there's a choice to make, and reopens the banner with the switches showing.</li>
+  <li><strong>Taking a category back reloads the page.</strong> A script that has already run can't be unrun, so the reload starts again without it, and the analytics tag clears its cookies.</li>
+  <li>Changing the categories? Raise <code>CookieConsentService::VERSION</code>, and every visitor is asked again.</li>
+</ul>
+<div class="callout">
+  <p>The banner's wording is generic. Say what you actually measure in your cookie policy, and
+  name Google Analytics there once you've set an ID. See <a href="#/policies">Legal pages and
+  consent</a>.</p>
+</div>

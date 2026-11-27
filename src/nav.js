@@ -31,6 +31,7 @@ export const nav = [
       { slug: 'payments', title: 'Payments and subscriptions' },
       { slug: 'email', title: 'Email and newsletter' },
       { slug: 'policies', title: 'Legal pages and consent' },
+      { slug: 'search-and-analytics', title: 'Search engines and analytics' },
       { slug: 'languages', title: 'Languages' },
       { slug: 'data-tables', title: 'Data tables' },
       { slug: 'admin', title: 'The admin workspace' },

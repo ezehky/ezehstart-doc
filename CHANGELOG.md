@@ -3,6 +3,33 @@
 All notable changes to the Ezeh Start documentation site. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.5.0] - 2026-11-27
+
+Brings the docs up to kit 2.7.0.
+
+### Added
+
+- **Search engines and analytics**, a new page: the app-built robots.txt and sitemap,
+  `NoIndexMiddleware`, schema.org structured data, the blog RSS feed, Google Analytics
+  and the cookie banner's two shapes, its categories, the `site_consent` cookie and
+  what withdrawing consent does.
+- **Image and video libraries**: a **File storage** section on Cloudflare R2 — the
+  switch, the `R2_*` keys, landing locally then promoting, `images.disk`, and the
+  batched sync.
+- **Configuration**: the `R2_*` keys, and the Email settings and File storage screens.
+- **Releases and upgrading**: 2.7.0 in the history, with its upgrade steps — the two
+  renamed routes and gate keys, the `images.disk` index, `public/robots.txt`.
+- **Going to production**: check robots.txt and the sitemap, set up R2, name Google
+  Analytics in the policies.
+- **Blog**: posts in the sitemap, structured data and feed.
+
+### Changed
+
+- **Email and newsletter**: Delivery is now a tab of **Email settings**, beside
+  Sender. The cookie notice section points at the new page.
+- **Disclaimer**, **The admin workspace** and **Introduction** describe the cookie
+  banner, the new screens and the new areas.
+
 ## [2.4.0] - 2026-11-25
 
 Brings the docs up to kit 2.6.0.

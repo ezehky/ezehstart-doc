@@ -16,6 +16,7 @@
 <table>
   <thead><tr><th>Version</th><th>Date</th><th>Highlights</th></tr></thead>
   <tbody>
+    <tr><td>2.7.0</td><td>2026-11-27</td><td>An app-built robots.txt and sitemap, schema.org data, a blog RSS feed, Google Analytics behind a real consent banner, optional Cloudflare R2 storage, and Email settings as one screen. <strong>Renames two routes and two gate keys.</strong></td></tr>
     <tr><td>2.6.0</td><td>2026-11-25</td><td>A brand colour picked from the dashboard, an optional Translate this page menu, cropping and WebP conversion in the image library, members' libraries limited to their own uploads, email addresses stored in lower case</td></tr>
     <tr><td>2.5.0</td><td>2026-11-08</td><td>Split payments through subaccounts on Paystack, Flutterwave and Monnify, the money screens grouped under Finance with <code>finance.*</code> gates, GitHub and docs links in the header, footer and dashboard</td></tr>
     <tr><td>2.4.0</td><td>2026-11-02</td><td>Email delivery through Resend, Brevo or SMTP, the Bachs gateway, a separate fee for cards from abroad, resuming a cancelled subscription, emailing members about a new policy, states and regions</td></tr>
@@ -30,6 +31,41 @@
   </tbody>
 </table>
 <p>If you're starting a project from the current kit, there's nothing to do. The sections below are for a project built on an earlier version.</p>
+
+<h2>Upgrading to 2.7.0</h2>
+<p>
+  There are no new tables. One new dependency, <code>league/flysystem-aws-s3-v3</code> (guzzle
+  stays on 8), and new views, so install and rebuild:
+</p>
+<pre><code>composer install
+npm install &amp;&amp; npm run build</code></pre>
+<p>
+  The kit indexes <code>images.disk</code> by editing its create migration. A project made from the
+  kit needs its own <code>add_*</code> migration for it:
+</p>
+<pre><code>Schema::table('images', function (Blueprint $table) {
+    $table-&gt;index('disk');
+});</code></pre>
+<div class="callout warn">
+  <p><strong>This minor release renames two routes and two gate keys</strong>, which a minor
+  normally doesn't. Both email screens became one, so there was no way to keep the old names
+  pointing anywhere useful.</p>
+</div>
+<table>
+  <thead><tr><th>Was</th><th>Now</th></tr></thead>
+  <tbody>
+    <tr><td><code>admin.config.email-senders</code></td><td><code>admin.config.email-settings.sender</code></td></tr>
+    <tr><td><code>admin.config.email-delivery</code></td><td><code>admin.config.email-settings.delivery</code></td></tr>
+    <tr><td>Gates <code>config.email-senders</code>, <code>config.email-delivery</code></td><td>Gate <code>config.email-settings</code></td></tr>
+  </tbody>
+</table>
+<ul>
+  <li><strong>Search your own code</strong> for the two old route names and replace them.</li>
+  <li><strong>A custom role that held either old gate key needs <code>config.email-settings</code> granted</strong> on <strong>Roles</strong>. A role holding <code>config</code> needs nothing.</li>
+  <li><strong>Delete any <code>public/robots.txt</code></strong> you added. The web server serves a static file before the app's.</li>
+  <li><strong>Every visitor sees the cookie banner once more</strong>, since the old notice's dismissal isn't a <code>site_consent</code> answer.</li>
+  <li><strong>Analytics and R2 are both off</strong> until you set them up. A role holding only some <code>config.*</code> children needs <code>config.file-storage</code> granted to reach File storage.</li>
+</ul>
 
 <h2>Upgrading to 2.6.0</h2>
 <p>There are no migrations and no renames. Install the dependencies and rebuild the assets, since there are two new JS modules and new CSS:</p>

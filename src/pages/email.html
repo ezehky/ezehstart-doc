@@ -3,9 +3,10 @@
 
 <h2>Delivery</h2>
 <p>
-  <strong>Admin → Site configuration → Email delivery</strong> picks which service sends the site's
-  email. It starts on <strong>Log only</strong>, which writes every email to the log and delivers
-  nothing.
+  <strong>Configuration › Email settings</strong> is one screen with two tabs, each its own form.
+  <strong>Sender</strong> holds the from-addresses. <strong>Delivery</strong> picks which service
+  sends the site's email, and starts on <strong>Log only</strong>, which writes every email to the
+  log and delivers nothing. Both sit behind the <code>config.email-settings</code> gate.
 </p>
 <table>
   <thead><tr><th>Provider</th><th>Keys in <code>.env</code></th></tr></thead>
@@ -78,9 +79,9 @@
   queued behind it. If none is live, the popup falls back to the plain newsletter sign-up.
 </p>
 
-<h2>Cookie notice</h2>
+<h2>Cookie banner</h2>
 <p>
-  <code>preferences.accept-cookies</code> shows a notice on every page. It's a
-  <strong>notice, not a consent gate</strong>: the kit sets only session and CSRF cookies. If you
-  add analytics, turn it off and put a real consent choice in its place.
+  The cookie banner moved to <a href="#/search-and-analytics/the-cookie-banner">Search engines and
+  analytics</a>: it's a plain notice until a Google Analytics ID is set, and a real consent choice
+  after.
 </p>

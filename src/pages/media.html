@@ -39,6 +39,24 @@
   <li>Members never see the tab, and every method checks again on the server.</li>
 </ul>
 
+<h2>File storage</h2>
+<p>
+  Uploads can be kept on <strong>Cloudflare R2</strong> instead of the local public disk. It's
+  optional and off by default. <strong>Configuration › File storage</strong>
+  (<code>admin.config.file-storage</code>, gate <code>config.file-storage</code>) has the switch
+  (<code>storage.cloud</code>) and the bucket's public address (<code>storage.public-url</code>).
+  The access keys, bucket and endpoint stay in <code>.env</code> as <code>R2_*</code>, so a secret
+  is never written to the site configuration or shown on a screen. <code>CloudStorageService</code>
+  does the work over the <code>r2</code> disk.
+</p>
+<ul>
+  <li><strong>Every upload lands locally first</strong>, where it's converted to WebP, optimised and measured, and is then promoted to R2. A crop pulls an R2 file down, cuts it and pushes it back.</li>
+  <li><strong>Each image records its disk</strong> in <code>images.disk</code>, and is cropped and deleted through it. The logo and favicon have no row, so they're looked for on the active disk first, then the other one.</li>
+  <li><strong>Flipping the switch moves nothing.</strong> It decides where a <em>new</em> upload goes, and every existing file keeps working where it is. <strong>Sync</strong> on the same screen moves the rest onto the disk that's switched on, ten files per request, with the logo and favicon in the first batch. A file that can't be moved is skipped and reported, so the sync always finishes. It's logged once, as <code>STORAGE_SYNC</code>.</li>
+  <li><strong>A switch without its keys counts as off.</strong> R2 is used only once every <code>R2_*</code> key is set and there's a public address, since a file in a bucket the browser has no address for is a file nobody can see. Until then uploads stay local, Sync refuses to run, and the screen names the missing keys.</li>
+  <li>Videos are references, not files, so there's nothing of theirs to store.</li>
+</ul>
+
 <h2>Videos</h2>
 <p>
   A video row is a <strong>reference</strong> (a provider plus that provider's own id), never a
